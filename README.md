@@ -373,7 +373,6 @@ Create a new Java class called `MovieService` in the package `io.redis.movies.se
 package io.redis.movies.searcher.core.service;
 
 import io.redis.movies.searcher.core.domain.Movie;
-import io.redis.movies.searcher.core.repository.MovieRepository;
 import io.redis.movies.searcher.data.repository.MovieDataRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -395,97 +394,97 @@ import java.util.stream.Collectors;
 @Service
 public class MovieService {
 
-    private static final Logger log = LoggerFactory.getLogger(MovieService.class);
+  private static final Logger log = LoggerFactory.getLogger(MovieService.class);
 
-    private final MovieRepository movieRepository;
-    private final MovieDataRepository movieDataRepository;
-    private final RedisTemplate redisTemplate;
+  private final MovieRepository movieRepository;
+  private final MovieDataRepository movieDataRepository;
+  private final RedisTemplate redisTemplate;
 
-    public MovieService(MovieRepository movieRepository,
-                        MovieDataRepository movieDataRepository,
-                        RedisTemplate redisTemplate) {
-        this.movieRepository = movieRepository;
-        this.movieDataRepository = movieDataRepository;
-        this.redisTemplate = redisTemplate;
+  public MovieService(MovieRepository movieRepository,
+                      MovieDataRepository movieDataRepository,
+                      RedisTemplate redisTemplate) {
+    this.movieRepository = movieRepository;
+    this.movieDataRepository = movieDataRepository;
+    this.redisTemplate = redisTemplate;
+  }
+
+  public void importMovies() {
+    log.info("Starting processing the movies available at Redis...");
+
+    Set<String> allMovieKeys = new HashSet<>();
+    try (Cursor<byte[]> cursor = redisTemplate.getConnectionFactory().getConnection()
+            .scan(ScanOptions.scanOptions().match("import:movie:*").count(1000).build())) {
+      while (cursor.hasNext()) {
+        allMovieKeys.add(new String(cursor.next(), StandardCharsets.UTF_8));
+      }
     }
 
-    public void importMovies() {
-        log.info("Starting processing the movies available at Redis...");
+    log.info("Found {} records with the key prefix 'import:movie'", allMovieKeys.size());
+    if (allMovieKeys.isEmpty()) {
+      return;
+    }
 
-        Set<String> allMovieKeys = new HashSet<>();
-        try (Cursor<byte[]> cursor = redisTemplate.getConnectionFactory().getConnection()
-                .scan(ScanOptions.scanOptions().match("import:movie:*").count(1000).build())) {
-            while (cursor.hasNext()) {
-                allMovieKeys.add(new String(cursor.next(), StandardCharsets.UTF_8));
-            }
-        }
-
-        log.info("Found {} records with the key prefix 'import:movie'", allMovieKeys.size());
-        if (allMovieKeys.isEmpty()) {
-            return;
-        }
-
-        var startTime = Instant.now();
-        List<Movie> movies = allMovieKeys.parallelStream()
-                .map(key -> {
-                    try {
-                        Integer id = Integer.parseInt(key.split(":")[2]);
-                        var movieData = movieDataRepository.findById(id).orElse(null);
-                        if (movieData != null && !movieRepository.existsById(movieData.getId())) {
-                            return Movie.fromData(movieData);
-                        }
-                    } catch (Exception e) {
-                        log.warn("Error processing key {}: {}", key, e.getMessage());
-                    }
-                    return null;
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-
-        if (!movies.isEmpty()) {
-            log.info("Loaded {} records into memory. Saving them all...", movies.size());
-            try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-                final int batchSize = 500;
-                List<CompletableFuture<Void>> futures = new ArrayList<>();
-                AtomicInteger savedCounter = new AtomicInteger(0);
-
-                for (int i = 0; i < movies.size(); i += batchSize) {
-                    int end = Math.min(i + batchSize, movies.size());
-                    List<Movie> batch = movies.subList(i, end);
-
-                    CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-                        try {
-                            movieRepository.saveAll(batch);
-                            int totalSaved = savedCounter.addAndGet(batch.size());
-                            if (totalSaved % 500 == 0 || totalSaved == movies.size()) {
-                                double percentComplete = (totalSaved * 100.0) / movies.size();
-                                log.info("Saved {}/{} movies ({}%)",
-                                        totalSaved, movies.size(),
-                                        String.format("%.1f", percentComplete));
-                            }
-                        } catch (Exception ex) {
-                            log.error("Error saving batch: {}", ex.getMessage(), ex);
-                        }
-                    }, executor);
-
-                    futures.add(future);
+    var startTime = Instant.now();
+    List<Movie> movies = allMovieKeys.parallelStream()
+            .map(key -> {
+              try {
+                Integer id = Integer.parseInt(key.split(":")[2]);
+                var movieData = movieDataRepository.findById(id).orElse(null);
+                if (movieData != null && !movieRepository.existsById(movieData.getId())) {
+                  return Movie.fromData(movieData);
                 }
+              } catch (Exception e) {
+                log.warn("Error processing key {}: {}", key, e.getMessage());
+              }
+              return null;
+            })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
 
-                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+    if (!movies.isEmpty()) {
+      log.info("Loaded {} records into memory. Saving them all...", movies.size());
+      try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+        final int batchSize = 500;
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        AtomicInteger savedCounter = new AtomicInteger(0);
+
+        for (int i = 0; i < movies.size(); i += batchSize) {
+          int end = Math.min(i + batchSize, movies.size());
+          List<Movie> batch = movies.subList(i, end);
+
+          CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+            try {
+              movieRepository.saveAll(batch);
+              int totalSaved = savedCounter.addAndGet(batch.size());
+              if (totalSaved % 500 == 0 || totalSaved == movies.size()) {
+                double percentComplete = (totalSaved * 100.0) / movies.size();
+                log.info("Saved {}/{} movies ({}%)",
+                        totalSaved, movies.size(),
+                        String.format("%.1f", percentComplete));
+              }
+            } catch (Exception ex) {
+              log.error("Error saving batch: {}", ex.getMessage(), ex);
             }
+          }, executor);
+
+          futures.add(future);
         }
 
-        var duration = Duration.between(startTime, Instant.now());
-        double seconds = duration.toMillis() / 1000.0;
-        log.info("Processing complete: {} source keys loaded, saved {} records in {} seconds",
-                allMovieKeys.size(),
-                movies.size(),
-                String.format("%.2f", seconds));
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+      }
     }
 
-    public boolean isDataLoaded() {
-        return movieRepository.count() > 1;
-    }
+    var duration = Duration.between(startTime, Instant.now());
+    double seconds = duration.toMillis() / 1000.0;
+    log.info("Processing complete: {} source keys loaded, saved {} records in {} seconds",
+            allMovieKeys.size(),
+            movies.size(),
+            String.format("%.2f", seconds));
+  }
+
+  public boolean isDataLoaded() {
+    return movieRepository.count() > 1;
+  }
 }
 ```
 
@@ -496,7 +495,6 @@ package io.redis.movies.searcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.redis.movies.searcher.core.service.MovieService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -509,22 +507,22 @@ import com.redis.om.spring.annotations.EnableRedisEnhancedRepositories;
 @EnableRedisEnhancedRepositories(basePackages = {"io.redis.movies.searcher.core*"})
 public class RedisMoviesSearcher {
 
-    private static final Logger log = LoggerFactory.getLogger(RedisMoviesSearcher.class);
+  private static final Logger log = LoggerFactory.getLogger(RedisMoviesSearcher.class);
 
-    public static void main(String[] args) {
-        SpringApplication.run(RedisMoviesSearcher.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(RedisMoviesSearcher.class, args);
+  }
 
-    @Bean
-    CommandLineRunner loadData(MovieService movieService) {
-        return args -> {
-            if (movieService.isDataLoaded()) {
-                log.info("Movies already loaded. Skipping data load.");
-                return;
-            }
-            movieService.importMovies();
-        };
-    }
+  @Bean
+  CommandLineRunner loadData(MovieService movieService) {
+    return args -> {
+      if (movieService.isDataLoaded()) {
+        log.info("Movies already loaded. Skipping data load.");
+        return;
+      }
+      movieService.importMovies();
+    };
+  }
 
 }
 ```
@@ -806,7 +804,6 @@ Along with the domain entity, you will need a repository implementation to perfo
 package io.redis.movies.searcher.core.repository;
 
 import com.redis.om.spring.repository.RedisEnhancedRepository;
-import io.redis.movies.searcher.core.domain.Keyword;
 
 public interface KeywordRepository extends RedisEnhancedRepository<Keyword, String> {
 }
@@ -821,7 +818,6 @@ import ai.djl.util.Pair;
 import com.redis.om.spring.search.stream.EntityStream;
 import io.redis.movies.searcher.core.domain.*;
 import io.redis.movies.searcher.core.dto.MovieDTO;
-import io.redis.movies.searcher.core.repository.KeywordRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -835,96 +831,96 @@ import java.util.stream.Collectors;
 @Service
 public class SearchService {
 
-    private static final Logger logger = LoggerFactory.getLogger(SearchService.class);
+  private static final Logger logger = LoggerFactory.getLogger(SearchService.class);
 
-    private final EntityStream entityStream;
-    private final KeywordRepository keywordRepository;
+  private final EntityStream entityStream;
+  private final KeywordRepository keywordRepository;
 
-    public SearchService(EntityStream entityStream, KeywordRepository keywordRepository) {
-        this.entityStream = entityStream;
-        this.keywordRepository = keywordRepository;
+  public SearchService(EntityStream entityStream, KeywordRepository keywordRepository) {
+    this.entityStream = entityStream;
+    this.keywordRepository = keywordRepository;
+  }
+
+  public Pair<List<MovieDTO>, ResultType> searchMovies(String query, Integer limit) {
+    logger.info("Received query: {}", query);
+    logger.info("-------------------------");
+    final int resultLimit = (limit == null) ? 3 : limit;
+
+    // Execute FTS search
+    var ftsSearchStartTime = System.currentTimeMillis();
+    List<Movie> ftsMovies = entityStream.of(Movie.class)
+            .filter(
+                    Movie$.TITLE.eq(query).or(Movie$.TITLE.containing(query)).or(
+                            ((Predicate<? super String>) Movie$.ACTORS.containsAll(query)))
+
+            )
+            .limit(resultLimit)
+            .sorted(Comparator.comparing(Movie::getTitle))
+            .collect(Collectors.toList());
+
+    var ftsSearchEndTime = System.currentTimeMillis();
+    logger.info("FTS search took {} ms", ftsSearchEndTime - ftsSearchStartTime);
+
+    // Convert FTS results to DTOs
+    List<MovieDTO> ftsMovieDTOs = convertToDTOs(ftsMovies);
+
+    // If FTS results are sufficient, return them immediately
+    if (ftsMovies.size() >= resultLimit) {
+      return new Pair<>(ftsMovieDTOs, ResultType.FTS);
     }
 
-    public Pair<List<MovieDTO>, ResultType> searchMovies(String query, Integer limit) {
-        logger.info("Received query: {}", query);
-        logger.info("-------------------------");
-        final int resultLimit = (limit == null) ? 3 : limit;
+    // Create the embedding
+    var embeddingStartTime = System.currentTimeMillis();
+    byte[] embeddedQuery = getQueryEmbeddingAsByteArray(query);
+    var embeddingEndTime = System.currentTimeMillis();
+    logger.info("Embedding took {} ms", embeddingEndTime - embeddingStartTime);
 
-        // Execute FTS search
-        var ftsSearchStartTime = System.currentTimeMillis();
-        List<Movie> ftsMovies = entityStream.of(Movie.class)
-                .filter(
-                        Movie$.TITLE.eq(query).or(Movie$.TITLE.containing(query)).or(
-                                ((Predicate<? super String>) Movie$.ACTORS.containsAll(query)))
+    // Execute VSS search
+    var vssSearchStartTime = System.currentTimeMillis();
+    List<Movie> vssMovies = entityStream.of(Movie.class)
+            .filter(Movie$.PLOT_EMBEDDING.knn(resultLimit, embeddedQuery))
+            .limit(resultLimit)
+            .sorted(Movie$._PLOT_EMBEDDING_SCORE)
+            .collect(Collectors.toList());
+    var vssSearchEndTime = System.currentTimeMillis();
+    logger.info("VSS search took {} ms", vssSearchEndTime - vssSearchStartTime);
 
-                )
-                .limit(resultLimit)
-                .sorted(Comparator.comparing(Movie::getTitle))
-                .collect(Collectors.toList());
+    // Combine results
+    LinkedHashMap<Integer, Movie> uniqueMoviesMap = new LinkedHashMap<>();
+    ftsMovies.forEach(movie -> uniqueMoviesMap.put(movie.getId(), movie));
+    vssMovies.forEach(movie -> uniqueMoviesMap.putIfAbsent(movie.getId(), movie));
 
-        var ftsSearchEndTime = System.currentTimeMillis();
-        logger.info("FTS search took {} ms", ftsSearchEndTime - ftsSearchStartTime);
+    // Limit and convert combined results to DTOs
+    List<Movie> uniqueMovies = uniqueMoviesMap.values().stream()
+            .limit(resultLimit)
+            .collect(Collectors.toList());
 
-        // Convert FTS results to DTOs
-        List<MovieDTO> ftsMovieDTOs = convertToDTOs(ftsMovies);
+    return new Pair<>(convertToDTOs(uniqueMovies), ftsMovies.isEmpty() ? ResultType.VSS : ResultType.HYBRID);
+  }
 
-        // If FTS results are sufficient, return them immediately
-        if (ftsMovies.size() >= resultLimit) {
-            return new Pair<>(ftsMovieDTOs, ResultType.FTS);
-        }
+  private byte[] getQueryEmbeddingAsByteArray(String query) {
+    return entityStream.of(Keyword.class)
+            .filter(Keyword$.VALUE.containing(query))
+            .findFirst()
+            .map(Keyword::getEmbedding)
+            .orElseGet(() -> keywordRepository.save(new Keyword(query)).getEmbedding());
+  }
 
-        // Create the embedding
-        var embeddingStartTime = System.currentTimeMillis();
-        byte[] embeddedQuery = getQueryEmbeddingAsByteArray(query);
-        var embeddingEndTime = System.currentTimeMillis();
-        logger.info("Embedding took {} ms", embeddingEndTime - embeddingStartTime);
+  private List<MovieDTO> convertToDTOs(List<Movie> movies) {
+    return movies.stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+  }
 
-        // Execute VSS search
-        var vssSearchStartTime = System.currentTimeMillis();
-        List<Movie> vssMovies = entityStream.of(Movie.class)
-                .filter(Movie$.PLOT_EMBEDDING.knn(resultLimit, embeddedQuery))
-                .limit(resultLimit)
-                .sorted(Movie$._PLOT_EMBEDDING_SCORE)
-                .collect(Collectors.toList());
-        var vssSearchEndTime = System.currentTimeMillis();
-        logger.info("VSS search took {} ms", vssSearchEndTime - vssSearchStartTime);
-
-        // Combine results
-        LinkedHashMap<Integer, Movie> uniqueMoviesMap = new LinkedHashMap<>();
-        ftsMovies.forEach(movie -> uniqueMoviesMap.put(movie.getId(), movie));
-        vssMovies.forEach(movie -> uniqueMoviesMap.putIfAbsent(movie.getId(), movie));
-
-        // Limit and convert combined results to DTOs
-        List<Movie> uniqueMovies = uniqueMoviesMap.values().stream()
-                .limit(resultLimit)
-                .collect(Collectors.toList());
-
-        return new Pair<>(convertToDTOs(uniqueMovies), ftsMovies.isEmpty() ? ResultType.VSS : ResultType.HYBRID);
-    }
-
-    private byte[] getQueryEmbeddingAsByteArray(String query) {
-        return entityStream.of(Keyword.class)
-                .filter(Keyword$.VALUE.containing(query))
-                .findFirst()
-                .map(Keyword::getEmbedding)
-                .orElseGet(() -> keywordRepository.save(new Keyword(query)).getEmbedding());
-    }
-
-    private List<MovieDTO> convertToDTOs(List<Movie> movies) {
-        return movies.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
-
-    private MovieDTO convertToDTO(Movie movie) {
-        return new MovieDTO(
-                movie.getTitle(),
-                movie.getYear(),
-                movie.getPlot(),
-                movie.getRating(),
-                movie.getActors().toArray(new String[0])
-        );
-    }
+  private MovieDTO convertToDTO(Movie movie) {
+    return new MovieDTO(
+            movie.getTitle(),
+            movie.getYear(),
+            movie.getPlot(),
+            movie.getRating(),
+            movie.getActors().toArray(new String[0])
+    );
+  }
 
 }
 ```
@@ -1014,8 +1010,6 @@ export REDIS_PASSWORD=password
 Edit the `src/main/resources/application.properties` file and update it with the new connection details. The file should look like this:
 
 ```properties
-
-```java
 server.port=8081
 
 spring.data.redis.host=${REDIS_HOST:localhost}
