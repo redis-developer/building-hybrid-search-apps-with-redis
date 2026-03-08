@@ -8,7 +8,7 @@ By the end of this lab, you will:
 - Validate that `plotEmbedding` is generated for previously imported data
 - Improve semantic retrieval behavior for manual hybrid search
 
-#### 🕗 Estimated Time: 20 minutes
+#### 🕗 Estimated Time: 25 minutes
 
 ## 🏗️ What You're Building
 In this lab, you'll implement the embedding backfill pipeline that prepares existing movies for vector search.
