@@ -201,7 +201,7 @@ If you are using **Local development**, run:
 If you are using **GitHub Codespaces** or **Dev Containers**, run the same command from the workspace terminal.
 
 Important behavior:
-- Startup now can take longer because the app need to create the embeddings.
+- Startup can take longer on the first run because the app needs to create embeddings.
 - On later runs, if embeddings are already present, startup is much faster.
 - This backfill is required for vector search to return meaningful results.
 
@@ -217,7 +217,7 @@ Expect logs similar to:
 1. Open Redis Insight (`http://localhost:5540` or forwarded URL)
 2. Connect to `redis-database:6379` (Codespaces/Dev Containers) or your local Redis endpoint
 3. Browse `movie:*` documents
-4. Open a movie and verify of the field `plotEmbedding` now exists
+4. Open a movie and verify that the `plotEmbedding` field now exists
 
 ### Semantic query check
 ```bash
