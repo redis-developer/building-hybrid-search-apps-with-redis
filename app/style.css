@@ -15,18 +15,6 @@ body {
     background: #ffffff;
 }
 
-.container {
-    display: flex;
-    width: 850px;
-    gap: 70px;
-    padding: 60px 40px;
-    background: #fff;
-    border-radius: 10px;
-    align-items: flex-end;
-    justify-content: space-between;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-}
-
 #results-table tbody tr:nth-child(odd) {
     background-color: #f9f9f9;
 }
@@ -38,32 +26,6 @@ body {
 .redis-logo img {
     width: 250px;
     height: auto;
-}
-
-hr {
-    border: none;
-    height: 2px;
-    background-color: #333;
-    margin: 15px 0;
-}
-
-.modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 500px;
-    text-align: center;
-}
-
-footer {
-    text-align: center;
-    padding: 20px;
-    background-color: #f0f0f0;
-    position: absolute;
-    bottom: 0;
-    width: 100%;
 }
 
 #search-box {
@@ -78,8 +40,4 @@ footer {
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black"><text y="20" font-size="20">🔍</text></svg>') no-repeat 10px center;
     background-size: 20px 20px;
     font-family: "Open Sans", sans-serif;
-}
-
-#results-table th {
-    background-color: red; /* Change to your desired color */
 }

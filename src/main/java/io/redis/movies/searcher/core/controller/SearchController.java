@@ -21,10 +21,10 @@ public class SearchController {
             @RequestParam(required = true) String query,
             @RequestParam(required = false) Integer limit
     ) {
-        var matchedMovies = searchService.searchMovies(query, limit);
+        var matchedMovies = searchService.nativeHybridSearch(query, limit);
         return Map.of(
-                "resultType", matchedMovies.getValue().name(),
-                "matchedMovies", matchedMovies.getKey()
+                "resultType", matchedMovies.getSecond().name(),
+                "matchedMovies", matchedMovies.getFirst()
         );
     }
 }

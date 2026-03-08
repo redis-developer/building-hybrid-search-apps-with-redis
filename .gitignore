@@ -23,5 +23,7 @@
 hs_err_pid*
 replay_pid*
 
+# IntelliJ
 .idea
 target
+.java-version
