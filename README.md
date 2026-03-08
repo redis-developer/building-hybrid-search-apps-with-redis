@@ -71,7 +71,7 @@ Your application now implements an end-to-end search experience with:
 - **Redis Insight**: data/index inspection and query validation
 - **Dev Containers / Codespaces**: reproducible workshop environments
 
-## 🎓 Concepts Practiced
+## 🎓 Concepts Learned
 
 1. **Lexical vs Semantic Retrieval**: understanding precision vs intent
 2. **Hybrid Ranking Design**: combining text and vector scores
@@ -79,32 +79,7 @@ Your application now implements an end-to-end search experience with:
 4. **Cache-Aside Strategy**: reducing repeated expensive operations
 5. **Redis Data Modeling**: designing JSON documents and indexes for search
 
-## 🚀 Run the Complete Solution
-
-### 1. Start infrastructure
-```bash
-docker compose up -d redis-database redis-insight rhs-frontend
-```
-
-### 2. Create index and import data
-```bash
-cd data
-./create-index.sh
-./import-movies.sh
-cd ..
-```
-
-### 3. Run the backend
-```bash
-./mvnw spring-boot:run
-```
-
-### 4. Access the application
-- UI: `http://localhost:8080/redis-movies-searcher`
-- API sample: `http://localhost:8081/search?query=dude%20who%20teaches%20rock`
-- Redis Insight: `http://localhost:5540`
-
-## 🔭 Suggested Next Improvements
+## 🚀 Next Steps for Your Journey
 
 ### 1. Add Strategy Comparison in the UI
 - Toggle between FTS, VSS, manual hybrid, and native hybrid
