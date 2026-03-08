@@ -83,6 +83,8 @@ If you are using **GitHub Codespaces** or **Dev Containers**, these services are
 ./mvnw spring-boot:run
 ```
 
+> 💡 From this point on, every time you change backend code, rebuild and run the backend again before validating behavior.
+
 ## 🧪 Testing Your Setup
 ### API reachability test
 ```bash
