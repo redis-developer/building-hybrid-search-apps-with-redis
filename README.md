@@ -94,11 +94,11 @@ cd ..
 If you are using **GitHub Codespaces** or **Dev Containers**, run the same command from the workspace terminal.
 
 ## 🧪 Testing Your Import
-### API verification (FTS)
+### API verification (FTS on title)
 ```bash
-curl "http://localhost:8081/search?query=Tom%20Hanks"
+curl "http://localhost:8081/search?query=star"
 ```
-You should get movie matches from imported data.
+You should get movie matches based on title terms from imported data.
 
 ### Redis Insight verification
 1. Open Redis Insight (`http://localhost:5540` or forwarded URL)
