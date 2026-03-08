@@ -84,7 +84,7 @@ If you're using **GitHub Codespaces**:
 - Create a new Codespace for this repository
 - Forward ports `8080`, `8081`, `5540`, and `6379`
 
-If you are using Dev Containers locally:
+If you are using **Dev Containers locally**:
 - Clone the repository:
   ```bash
   git clone https://github.com/redis-developer/building-hybrid-search-apps-with-redis.git
