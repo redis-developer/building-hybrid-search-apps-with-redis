@@ -14,10 +14,10 @@ By the end of this lab, you will:
 In this final lab, you'll add prompt embedding reuse so repeated queries become faster and cheaper.
 
 This includes:
-- **`Keyword` domain class** to store prompt text + embedding vectors
-- **`KeywordRepository`** to persist and retrieve cached prompt embeddings
-- **`getQueryAsVectorUsingKeyword(...)`** implementation in `SearchService`
-- **Native hybrid path update** to use keyword-based embedding lookup
+- `Keyword` domain class to store prompt text + embedding vectors
+- `KeywordRepository` to persist and retrieve cached prompt embeddings
+- `getQueryAsVectorUsingKeyword(...)` implementation in `SearchService`
+- Native hybrid path update to use keyword-based embedding lookup
 
 ## 📋 Prerequisites Check
 Before starting, confirm the checklist for the setup option you selected:
@@ -52,9 +52,9 @@ This lab introduces new components:
 - `src/main/java/io/redis/movies/searcher/core/repository/KeywordRepository.java`
 
 What they do:
-- `Keyword` is a Redis document (`keyword` keyspace) that stores prompt text in `value` and its vector in `embedding`.
+- `Keyword` is a class that stores prompt text in `value` and its vector in `embedding`.
 - `@Vectorize` on `value` populates `embedding` when a new `Keyword` is saved.
-- `KeywordRepository` gives CRUD access to persisted keywords.
+- `KeywordRepository` gives CRUD implementation to the Keyword entity.
 
 Also note in `SearchService` constructor that `KeywordRepository` is now injected for cache-aside behavior.
 
@@ -82,7 +82,7 @@ private float[] getQueryAsVectorUsingKeyword(String query) {
 
 What this code does:
 - Checks Redis first for an existing keyword whose `value` matches the query.
-- On cache hit, returns the stored `embedding`.
+- On cache hit, returns the stored `embedding`. The returned value is reused.
 - On cache miss, saves `new Keyword(query)` and returns the newly generated embedding.
 
 ### Step 3: Route native hybrid to the cache-aside method
