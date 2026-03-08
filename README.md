@@ -1,4 +1,4 @@
-# Building Hybrid Search Apps with Redis (Java Workshop)
+# Workshop Complete: Building Hybrid Search Apps with Redis (Java)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Java 21+](https://img.shields.io/badge/Java-21%2B-blue.svg)](https://www.oracle.com/java/technologies/downloads)
@@ -6,151 +6,115 @@
 [![Redis Query Engine](https://img.shields.io/badge/Redis-Query%20Engine-DC382D.svg)](https://redis.io/docs/latest/develop/interact/search-and-query/)
 [![Redis OM Spring](https://img.shields.io/badge/Redis%20OM-Spring-DC382D.svg)](https://github.com/redis/redis-om-spring)
 
-## Overview
-Welcome to this hands-on workshop, where you'll learn how to design and build modern search experiences using Redis. You will start with a working Spring Boot application and progressively evolve it from basic full-text search into advanced hybrid search with embeddings, native Redis hybrid search, and embedding cache-aside.
+## Congratulations
 
-This workshop uses a movie-search domain because it naturally demonstrates the difference between:
-- lexical matching (what users type exactly)
-- semantic matching (what users mean)
-- hybrid ranking (combining both approaches)
+You have completed the **Building Hybrid Search Apps with Redis** workshop.
+
+This branch (`workshop-complete`) contains the full reference implementation for the final workshop outcome, covering end-to-end indexing, data ingestion, embedding generation, native hybrid search, and prompt-embedding caching foundations.
 
 ![search.png](images/search.png)
 
-### Why Hybrid Search?
+## What You Built
 
-Search UX breaks down when you rely on a single strategy:
-- FTS alone misses intent when query wording differs from stored text
-- VSS alone can surface semantically related but lexically irrelevant results
-- ad hoc fallback logic adds latency and complexity
+Your final application demonstrates a complete hybrid-search pipeline with Redis:
 
-Hybrid search lets you balance precision and semantic relevance in one retrieval flow.
+- Spring Boot API and browser UI for movie discovery
+- Redis JSON document storage and RediSearch index configuration
+- FTS, VSS, and native hybrid retrieval strategies
+- Startup embedding generation for movie plots
+- Prompt-embedding cache-aside model using `Keyword`
 
-### What you'll build
+## Workshop Techniques Implemented
 
-By the end of this workshop, you'll have built a complete Redis-powered search application featuring:
-- Redis JSON document modeling and indexing for movies
-- Full-Text Search (FTS) with Redis Query Engine
-- Vector Similarity Search (VSS) with embeddings
-- Native hybrid search using Redis support
-- Startup embedding generation flow
-- Cache-aside for recurring prompt embeddings via `Keyword` documents
-- A browser UI to compare behavior and latency across strategies
+### 1. Search Bootstrapping (Lab 1)
+- Technique: Index-first search setup
+- Implementation: Redis index creation and app startup flow
+- Outcome: Search-ready schema before data volume grows
 
-## Prerequisites
+### 2. Data Ingestion with RIOT (Lab 2)
+- Technique: Structured bulk loading into Redis JSON
+- Implementation: `data/import-movies.sh` using RIOT processors
+- Outcome: Consistent, repeatable dataset initialization
 
-### Required knowledge
-- Basic Java and Spring Boot familiarity
-- Basic understanding of search concepts (keywords, ranking)
-- Familiarity with command-line tools
-- Basic understanding of Docker and Git
+### 3. Embedding Creation Pipeline (Lab 3)
+- Technique: Offline/startup vectorization
+- Implementation: `MovieService.regenerateMissingEmbeddings()`
+- Outcome: Existing data gains vector-search capability without reimport
 
-### Required software
+### 4. Native Hybrid Search (Lab 4)
+- Technique: Redis-native text + vector retrieval fusion
+- Implementation: `SearchService.nativeHybridSearch(...)`
+- Outcome: Better relevance with reduced app-side orchestration
 
-#### Option 1: GitHub Codespaces
-- GitHub account
-- Access to GitHub Codespaces (quota/billing enabled)
-- Browser or VS Code with Codespaces support
+### 5. Prompt Embedding Cache-Aside (Lab 5)
+- Technique: Cache-aside for recurring semantic queries
+- Implementation: `Keyword` domain model and repository-backed lookup/save flow
+- Outcome: Reduced repeated embedding work for recurring prompts
 
-#### Option 2: Local development
-- [Java 21+](https://www.oracle.com/java/technologies/downloads)
-- [Maven 3.9+](https://maven.apache.org/install.html)
-- [Docker](https://docs.docker.com/get-docker/)
-- [Git](https://git-scm.com/install/)
-- [RIOT](https://redis.io/docs/latest/develop/tools/riot/) (for dataset import labs)
-- Java IDE
+## Architecture Summary
 
-### Required accounts
+### Backend
+- Java 21 + Spring Boot 4
+- Redis OM Spring repositories and metamodel queries
+- REST endpoint: `GET /search?query=...&limit=...`
 
-No paid account is required for the core workshop flow. Everything can run locally with Docker.
+### Data and Search
+- Redis JSON movie documents (`movie:*`)
+- RediSearch index (`movie_index`) with text, numeric, tag, and vector fields
+- Vector embeddings configured at dimension `384` (cosine distance)
 
-## Workshop Structure
+### Frontend
+- Static HTML/JS UI served by NGINX (`/redis-movies-searcher`)
+- Live search calls against backend `search` API
 
-This workshop has an estimated duration of 90 minutes and is organized into 5 progressive labs.
+## Run the Complete Solution
 
-| Lab | Topic | Duration | Branch |
-|:----|:------|:---------|:-------|
-| 1 | [Get the search up and running](../../tree/lab-1-starter/README.md) | 20 mins | `lab-1-starter` |
-| 2 | [Importing data into Redis](../../tree/lab-2-starter/README.md) | 15 mins | `lab-2-starter` |
-| 3 | [Implementing embedding creation](../../tree/lab-3-starter/README.md) | 20 mins | `lab-3-starter` |
-| 4 | [Implementing native hybrid search](../../tree/lab-4-starter/README.md) | 20 mins | `lab-4-starter` |
-| 5 | [Caching prompt embedding](../../tree/lab-5-starter/README.md) | 15 mins | `lab-5-starter` |
-
-Each lab also has a corresponding `lab-X-solution` branch with the completed code for reference. You can compare your implementation using:
+### 1. Start infrastructure
 
 ```bash
-git diff lab-X-solution
+docker compose up -d redis-database redis-insight rhs-frontend
 ```
 
-## Getting Started
+### 2. Create index and import data
 
-### Step 1: Choose your setup option
+```bash
+cd data
+./create-index.sh
+./import-movies.sh
+cd ..
+```
 
-Pick one of the setup options from the Prerequisites section:
-- GitHub Codespaces
-- Local development
+### 3. Run backend
 
-### Step 2: Start your workspace
+```bash
+./mvnw spring-boot:run
+```
 
-If you are using **GitHub Codespaces**:
-- Create a new codespace for this repository.
-- Forward ports `8080`, `8081`, `6379`, and `5540`.
+### 4. Access the app
 
-If you are using **Local development**:
-- Clone the repository:
-
-  ```bash
-  git clone https://github.com/redis-developer/building-hybrid-search-apps-with-redis.git
-  ```
-
-- Verify tools:
-
-  ```bash
-  java -version
-  mvn -version
-  docker --version
-  git --version
-  riot --version
-  ```
-
-- Start infrastructure services:
-
-  ```bash
-  docker compose up -d redis-database redis-insight rhs-frontend
-  ```
-
-- Run backend:
-
-  ```bash
-  ./mvnw spring-boot:run
-  ```
-
-Access points:
-- App UI: http://localhost:8080/redis-movies-searcher
-- Backend API: http://localhost:8081/search?query=star
+- UI: http://localhost:8080/redis-movies-searcher
+- API sample: http://localhost:8081/search?query=dude%20who%20teaches%20rock
 - Redis Insight: http://localhost:5540
 
-### Step 3: Begin your first lab
+## Suggested Next Improvements
 
-Switch to the starter branch for Lab 1:
-
-```bash
-git checkout lab-1-starter
-```
-
-Then follow the lab README instructions.
+- Add strategy toggles in the UI to compare FTS, VSS, manual hybrid, and native hybrid side by side
+- Add response metadata (`mode`, `timings`, `counts`) for observability
+- Add tests for each lab milestone to support workshop validation
+- Add benchmark scripts for latency/quality comparisons per strategy
 
 ## Resources
+
 - [Redis Query Engine](https://redis.io/docs/latest/develop/interact/search-and-query/)
 - [Redis Vector Search](https://redis.io/docs/latest/develop/ai/search-and-query/vectors/)
 - [Redis OM Spring](https://github.com/redis/redis-om-spring)
 - [RIOT Documentation](https://redis.io/docs/latest/develop/tools/riot/)
 - [Redis Insight](https://redis.io/insight/)
 
-## Contributing
-Contributions are welcome. Please open an issue to discuss major changes before submitting a PR.
-
 ## Maintainers
+
 - Ricardo Ferreira — [@riferrei](https://github.com/riferrei)
 
 ## License
+
 This project is licensed under the [MIT License](./LICENSE).
