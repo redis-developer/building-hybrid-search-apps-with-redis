@@ -63,7 +63,10 @@ Open `data/import-movies.sh`.
 
 In this branch, the script still contains a TODO placeholder. Replace it with:
 ```bash
+REDIS_URI="redis://redis-database:6379"
+
 riot file-import \
+    --uri "$REDIS_URI" \
     --var counter="new java.lang.Integer(1)" \
     --proc id="#counter++" \
     --proc plot="info.plot" \
@@ -75,11 +78,16 @@ riot file-import \
 
 What this command does:
 - `file-import`: reads records from `movies.json`
+- `--uri`: explicitly points RIOT to the target Redis instance
 - `--var counter` + `--proc id`: creates incremental IDs for keys
 - `--proc plot/releaseDate/rating/actors`: extracts and maps nested `info.*` fields
 - `json.set --keyspace movie --key id`: stores each record as Redis JSON under `movie:<id>`
 
 During storage, each movie becomes a JSON document in Redis, ready for indexing/search using the structure expected by the app.
+
+URI notes:
+- GitHub Codespaces / Dev Containers: use `redis://redis-database:6379`
+- Local development: use `redis://localhost:6379` if Redis is exposed on your host
 
 ### Step 3: Run the import
 If you are using **Local development**, run:
