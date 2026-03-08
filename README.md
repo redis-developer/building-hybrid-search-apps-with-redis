@@ -3,22 +3,21 @@
 ## 🎯 Learning Objectives
 By the end of this lab, you will:
 - Implement a cache-aside strategy for prompt embeddings
-- Use a `Keyword` document model to persist query embeddings
+- Understand the role of the new `Keyword` document class
+- Understand the role of `KeywordRepository` in persistence
+- Reuse cached prompt vectors in the native hybrid search path
 - Reduce repeated embedding generation for recurring prompts
-- Route native hybrid embedding creation through a keyword lookup flow
 
 #### 🕗 Estimated Time: 10 minutes
 
 ## 🏗️ What You're Building
-In this final lab, you'll add prompt-embedding reuse so repeated queries become faster and cheaper.
+In this final lab, you'll add prompt embedding reuse so repeated queries become faster and cheaper.
 
 This includes:
-- **`Keyword` Entity + Repository** for cached embeddings
-- **`getQueryAsVectorUsingKeyword(...)`** implementation
-- **Native hybrid path update** to use keyword-backed embedding lookup
-
-### Architecture Overview
-![search.png](images/search.png)
+- **`Keyword` domain class** to store prompt text + embedding vectors
+- **`KeywordRepository`** to persist and retrieve cached prompt embeddings
+- **`getQueryAsVectorUsingKeyword(...)`** implementation in `SearchService`
+- **Native hybrid path update** to use keyword-based embedding lookup
 
 ## 📋 Prerequisites Check
 Before starting, confirm the checklist for the setup option you selected:
@@ -46,35 +45,64 @@ Before starting, confirm the checklist for the setup option you selected:
 > 💡 For GitHub Codespaces and Dev Containers, use forwarded URLs from the Ports panel for browser access.  
 > From workspace terminals, prefer service DNS names (for example, `redis-database`) when connecting to Redis.
 
-### Step 1: Review new domain components
-This branch already includes:
-- `Keyword` domain class
-- `KeywordRepository`
+### Step 1: Inspect the new classes
+This lab introduces new components:
 
-These support embedding cache-aside behavior.
+- `src/main/java/io/redis/movies/searcher/core/domain/Keyword.java`
+- `src/main/java/io/redis/movies/searcher/core/repository/KeywordRepository.java`
+
+What they do:
+- `Keyword` is a Redis document (`keyword` keyspace) that stores prompt text in `value` and its vector in `embedding`.
+- `@Vectorize` on `value` populates `embedding` when a new `Keyword` is saved.
+- `KeywordRepository` gives CRUD access to persisted keywords.
+
+Also note in `SearchService` constructor that `KeywordRepository` is now injected for cache-aside behavior.
 
 ### Step 2: Implement keyword-based embedding lookup
 Open `src/main/java/io/redis/movies/searcher/core/service/SearchService.java`.
 
-In this branch, implement:
+Replace this:
 ```java
-private float[] getQueryAsVectorUsingKeyword(String query)
+private float[] getQueryAsVectorUsingKeyword(String query) {
+    // Implement this method so it can use the Keyword class
+    return null;
+}
 ```
 
-Expected behavior:
-- Search for an existing keyword containing the query
-- If present, return stored embedding
-- If absent, persist `new Keyword(query)` and return generated embedding
-
-### Step 3: Switch native path to use cache-aside
-Still in `SearchService`, update from:
+With this:
 ```java
+private float[] getQueryAsVectorUsingKeyword(String query) {
+    return entityStream.of(Keyword.class)
+            .filter(Keyword$.VALUE.containing(query))
+            .findFirst()
+            .map(Keyword::getEmbedding)
+            .orElseGet(() -> keywordRepository.save(new Keyword(query)).getEmbedding());
+}
+```
+
+What this code does:
+- Checks Redis first for an existing keyword whose `value` matches the query.
+- On cache hit, returns the stored `embedding`.
+- On cache miss, saves `new Keyword(query)` and returns the newly generated embedding.
+
+### Step 3: Route native hybrid to the cache-aside method
+Still in `SearchService`, update `nativeHybridSearch(...)`.
+
+Replace this:
+```java
+// Make sure to change the method call here to
+// invoke the getQueryAsVectorUsingKeyword instead
 float[] queryAsVector = getQueryAsVector(query);
 ```
-To:
+
+With this:
 ```java
 float[] queryAsVector = getQueryAsVectorUsingKeyword(query);
 ```
+
+What this code does:
+- Switches native hybrid query embedding creation from always-generate to cache-aside lookup.
+- Keeps the rest of native hybrid retrieval logic unchanged.
 
 ### Step 4: Build and run
 If you are using **Local development**, run:
@@ -87,50 +115,68 @@ If you are using **Local development**, run:
 If you are using **GitHub Codespaces** or **Dev Containers**, run the same command from the workspace terminal.
 
 ## 🧪 Testing Your Implementation
-### Repeated query test
-Run the same query multiple times:
+### 1. Keep backend running
+Use the backend process started in Step 4 of Setup Instructions.
+
+### 2. API repeated-query test
+Run the same semantic query twice:
+
 ```bash
-curl "http://localhost:8081/search?query=dude%20who%20teaches%20rock"
-curl "http://localhost:8081/search?query=dude%20who%20teaches%20rock"
+curl "http://localhost:8081/search?query=dude%20who%20teaches%20rock&limit=5"
+curl "http://localhost:8081/search?query=dude%20who%20teaches%20rock&limit=5"
 ```
-The second run should avoid recomputing the embedding.
 
-### Verify cached keywords
-Inspect Redis for keyword documents.
+Both responses should include:
+- `resultType: "HYBRID"`
+- a non-empty `matchedMovies` list
 
-In Redis Insight:
-1. Open `http://localhost:5540`
-2. Browse keys for keyword records
-3. Confirm embeddings are stored with query text
+### 3. Redis Insight verification (cache entries)
+1. Open Redis Insight (`http://localhost:5540` or forwarded URL)
+2. Connect to `redis-database:6379` (Codespaces/Dev Containers) or your local Redis endpoint
+3. Browse `keyword:*` keys and open one document
+4. Confirm the document contains `value` and `embedding`
+5. Confirm `keyword_index` exists
 
-### API behavior check
-Response should still return hybrid results while using cached prompt vectors.
+### 4. Validate cache growth with a new prompt
+Run a different query:
+
+```bash
+curl "http://localhost:8081/search?query=space%20adventure%20crew&limit=5"
+```
+
+Then check Redis Insight again and confirm a new `keyword:*` record is created.
+
+### 5. UI validation
+1. Open `http://localhost:8080/redis-movies-searcher`
+2. Search for `dude who teaches rock`
+3. Search for `space adventure crew`
+4. Confirm results render with no browser errors
 
 ## 🎨 Understanding the Code
-### 1. Cache-aside pattern
-- Read cache first
-- On miss, compute and write back
-- Return generated value
+### 1. `Keyword` class
+- Represents cached prompt embeddings as Redis documents
+- Uses `@Vectorize(destination = "embedding")` to generate vectors automatically
 
-### 2. `Keyword` model
-- Stores prompt text and associated embedding
-- Enables reuse for recurring prompts
+### 2. `KeywordRepository`
+- Persists new keywords on cache miss
+- Enables retrieving previously stored prompt embeddings
 
-### 3. Why this matters
-- Reduces embedding calls for repeated searches
-- Improves latency and lowers external dependency pressure
+### 3. Cache-aside flow in `SearchService`
+- Read from keyword cache first
+- On miss, compute and store by saving a new `Keyword`
+- Return the vector to native hybrid search
 
 ## 🐛 Troubleshooting
 <details>
 <summary>Keyword entries are never created</summary>
 
-Confirm `getQueryAsVectorUsingKeyword(...)` is invoked from `nativeHybridSearch(...)`.
+Confirm `nativeHybridSearch(...)` calls `getQueryAsVectorUsingKeyword(...)`.
 </details>
 
 <details>
 <summary>Hybrid results changed unexpectedly</summary>
 
-Verify cached vectors use the same embedding model and dimensions as movie vectors.
+Verify keyword vectors and movie vectors use the same dimension/model setup.
 </details>
 
 <details>
