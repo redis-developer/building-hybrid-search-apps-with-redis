@@ -14,11 +14,8 @@ In this lab, you'll move from app-orchestrated manual search composition to nati
 
 This includes:
 - **`SearchService.nativeHybridSearch(...)`** implementation
-- **Controller route switch** to native hybrid
-- **Hybrid weighting (`alpha`)** configuration for text/vector balance
-
-### Architecture Overview
-![search.png](images/search.png)
+- Controller route code to switch from manual to native hybrid
+- Hybrid weighting (`alpha`) configuration for text/vector balance
 
 ## 📋 Prerequisites Check
 Before starting, confirm the checklist for the setup option you selected:
