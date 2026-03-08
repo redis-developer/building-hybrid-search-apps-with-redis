@@ -1,68 +1,86 @@
-# Workshop Complete: Building Hybrid Search Apps with Redis (Java)
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Java 21+](https://img.shields.io/badge/Java-21%2B-blue.svg)](https://www.oracle.com/java/technologies/downloads)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.0-6DB33F.svg)](https://spring.io/projects/spring-boot)
-[![Redis Query Engine](https://img.shields.io/badge/Redis-Query%20Engine-DC382D.svg)](https://redis.io/docs/latest/develop/interact/search-and-query/)
-[![Redis OM Spring](https://img.shields.io/badge/Redis%20OM-Spring-DC382D.svg)](https://github.com/redis/redis-om-spring)
-
 ## 🏆 Congratulations!
-You completed the **Building Hybrid Search Apps with Redis** workshop.
 
-This branch (`workshop-complete`) contains the full reference implementation with all labs applied end to end.
+You've successfully completed the **Building Hybrid Search Apps with Redis** workshop and built a complete hybrid search application with Java, Spring Boot, and Redis.
+
+This branch contains the full implementation of everything covered throughout the workshop, including data ingestion, embedding generation, native hybrid search, and prompt-embedding cache-aside.
+
+## 🎯 What You've Built
+
+### Complete Hybrid Search System
+
+Your application now implements an end-to-end search experience with:
 
 ![search.png](images/search.png)
 
-## 🎯 What You Built
-Your final application includes:
-- Spring Boot API and browser UI for search
-- Redis JSON document storage and RediSearch indexing
-- FTS, VSS, manual hybrid, and native hybrid strategies
-- Startup embedding regeneration for existing movie records
-- Prompt-embedding cache-aside using `Keyword`
+## 📚 Hybrid Search Techniques Implemented
 
-## 🧠 Techniques Implemented
-### 1. Search Bootstrapping (Lab 1)
-- **Technique**: index-first setup
-- **Implementation**: Redis index creation + baseline app startup
-- **Outcome**: search-ready schema before ingestion
+### 1. **Search Bootstrapping** (Lab 1)
+- **Technique**: Index-first setup
+- **Implementation**: Redis index creation + application startup flow
+- **Benefits**:
+  - Consistent schema from day one
+  - Reliable search initialization across environments
+  - Clear baseline for progressive labs
 
-### 2. Data Ingestion with RIOT (Lab 2)
-- **Technique**: structured bulk JSON import
-- **Implementation**: `data/import-movies.sh`
-- **Outcome**: repeatable dataset loading flow
+### 2. **Structured Data Ingestion with RIOT** (Lab 2)
+- **Technique**: Bulk JSON document import with transformation
+- **Implementation**: `data/import-movies.sh` and RIOT processors
+- **Benefits**:
+  - Repeatable data loading workflow
+  - Consistent key naming and document shape
+  - Fast workshop setup for all participants
 
-### 3. Embedding Backfill Pipeline (Lab 3)
-- **Technique**: startup vector generation for existing records
-- **Implementation**: `MovieService.regenerateMissingEmbeddings()`
-- **Outcome**: vector search without re-importing data
+### 3. **Startup Embedding Regeneration** (Lab 3)
+- **Technique**: Batched embedding backfill for existing records
+- **Implementation**: `MovieService.regenerateMissingEmbeddings()` + startup hook
+- **Benefits**:
+  - Existing documents become vector-search ready
+  - No need to re-import source data
+  - Predictable startup enrichment workflow
 
-### 4. Native Hybrid Search (Lab 4)
-- **Technique**: Redis-native lexical + semantic fusion
+### 4. **Native Hybrid Search with Redis** (Lab 4)
+- **Technique**: Server-side lexical and semantic score fusion
 - **Implementation**: `SearchService.nativeHybridSearch(...)`
-- **Outcome**: improved relevance with less app-side orchestration
+- **Benefits**:
+  - Better relevance by combining keyword and semantic signals
+  - Less app-side orchestration complexity
+  - Cleaner retrieval pipeline
 
-### 5. Prompt Embedding Cache-Aside (Lab 5)
-- **Technique**: cache-aside for recurring semantic prompts
-- **Implementation**: `Keyword` model + repository lookup/save
-- **Outcome**: fewer repeated embedding computations
+### 5. **Prompt Embedding Cache-Aside** (Lab 5)
+- **Technique**: Reuse query embeddings for recurring prompts
+- **Implementation**: `Keyword` domain + repository-backed lookup/save flow
+- **Benefits**:
+  - Reduced repeated embedding generation
+  - Lower query latency for recurring intents
+  - Better resource efficiency under repeated traffic
 
-## 🧩 Architecture Summary
-### Backend
-- Java 21 + Spring Boot 4
-- Redis OM Spring repositories and metamodel queries
-- API endpoint: `GET /search?query=...&limit=...`
+## 🔧 Technology Stack Mastered
 
-### Data and Search
-- Redis JSON movie documents (`movie:*`)
-- RediSearch index (`movie_index`) with text, numeric, tag, and vector fields
-- Embedding dimension `384` using cosine distance
+### Core Technologies
+- **Java 21**: modern language/runtime features
+- **Spring Boot 4**: REST API and app lifecycle orchestration
+- **Redis OM Spring**: repository-based modeling and query abstractions
 
-### Frontend
-- Static HTML/JS app served by NGINX (`/redis-movies-searcher`)
-- Live calls to backend search API
+### Data and Search Components
+- **Redis Query Engine**: full-text, vector, and hybrid capabilities
+- **Redis JSON**: document storage model for movie and keyword entities
+- **RIOT**: high-volume JSON import and transformation tooling
+
+### Interface and Tooling
+- **NGINX + HTML/JS frontend**: interactive search UI
+- **Redis Insight**: data/index inspection and query validation
+- **Dev Containers / Codespaces**: reproducible workshop environments
+
+## 🎓 Concepts Practiced
+
+1. **Lexical vs Semantic Retrieval**: understanding precision vs intent
+2. **Hybrid Ranking Design**: combining text and vector scores
+3. **Embedding Lifecycle Management**: when and how to generate vectors
+4. **Cache-Aside Strategy**: reducing repeated expensive operations
+5. **Redis Data Modeling**: designing JSON documents and indexes for search
 
 ## 🚀 Run the Complete Solution
+
 ### 1. Start infrastructure
 ```bash
 docker compose up -d redis-database redis-insight rhs-frontend
@@ -76,21 +94,33 @@ cd data
 cd ..
 ```
 
-### 3. Run backend
+### 3. Run the backend
 ```bash
 ./mvnw spring-boot:run
 ```
 
-### 4. Access the app
+### 4. Access the application
 - UI: `http://localhost:8080/redis-movies-searcher`
 - API sample: `http://localhost:8081/search?query=dude%20who%20teaches%20rock`
 - Redis Insight: `http://localhost:5540`
 
 ## 🔭 Suggested Next Improvements
-- Add UI toggles to compare FTS/VSS/manual/native hybrid side by side
-- Include response metadata (`mode`, `timings`, `counts`) for observability
-- Add milestone tests per lab for workshop validation
+
+### 1. Add Strategy Comparison in the UI
+- Toggle between FTS, VSS, manual hybrid, and native hybrid
+- Display strategy metadata and ranking behavior side-by-side
+
+### 2. Add Observability for Search Quality
+- Include response metadata (`mode`, `timings`, `result counts`)
+- Track latency and relevance drift over time
+
+### 3. Add Automated Validation
+- Add lab-level tests for each milestone
 - Add benchmark scripts for latency and relevance comparisons
+
+### 4. Expand Cache-Aside Capabilities
+- Add TTL and invalidation strategies for keyword embeddings
+- Add normalization and deduplication for query variants
 
 ## 📚 Resources
 - [Redis Query Engine](https://redis.io/docs/latest/develop/interact/search-and-query/)
@@ -98,6 +128,11 @@ cd ..
 - [Redis OM Spring](https://github.com/redis/redis-om-spring)
 - [RIOT Documentation](https://redis.io/docs/latest/develop/tools/riot/)
 - [Redis Insight](https://redis.io/insight/)
+
+## 🤝 Contributing
+Contributions and improvements are welcome.
+- Open an issue for proposals
+- Submit pull requests for enhancements and fixes
 
 ## 👥 Maintainers
 - Ricardo Ferreira — [@riferrei](https://github.com/riferrei)
