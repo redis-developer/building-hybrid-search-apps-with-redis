@@ -68,7 +68,7 @@ Key files:
 - `src/main/java/io/redis/movies/searcher/RedisMoviesSearcher.java`
 
 ### Step 3: Start infrastructure services
-If you are running from **Local development**, run these commands separately:
+If you are running from **Local development**, run:
 
 ```bash
 docker compose up -d
