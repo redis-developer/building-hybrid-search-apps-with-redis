@@ -23,22 +23,63 @@ This includes:
 ![search.png](images/search.png)
 
 ## 📋 Prerequisites Check
-Before starting, ensure you have:
-- [ ] Java 21+
-- [ ] Maven 3.9+
+Before starting, confirm the checklist for the setup option you selected:
+
+### Option 1: GitHub Codespaces
+- [ ] Codespace created and running for this repository
+- [ ] Ports `8080`, `8081`, `5540`, and `6379` are forwarded
+- [ ] Terminal is available inside the Codespace
+
+### Option 2: Dev Containers locally
+- [ ] Docker is up and running
+- [ ] Repository opened in your IDE Dev Container
+- [ ] Ports `8080`, `8081`, `5540`, and `6379` are available/forwarded
+
+### Option 3: Local development
+- [ ] Java 21+ installed
+- [ ] Maven 3.9+ installed
 - [ ] Docker up and running
 - [ ] Git configured
 
-> 💡 If you are using GitHub Codespaces, forward ports `8080`, `8081`, `5540`, and `6379`.
+### Lab-specific requirements
+- [ ] No previous lab required (this is the workshop entry point)
 
 ## 🚀 Setup Instructions
+> 💡 For GitHub Codespaces and Dev Containers, use the forwarded URL from the Ports panel for browser access.  
+> Use sidecar service DNS names from the workspace terminal when needed (for example, `redis-database`).
+
 ### Step 1: Start infrastructure services
+If you are running the workshop from **Local development**, run:
+
 ```bash
 docker compose up -d redis-database redis-insight rhs-frontend
 ```
 
+If you are using **GitHub Codespaces** or **Dev Containers**, services should start with the environment.  
+If needed, start them manually with:
+
+```bash
+docker compose -f .devcontainer/docker-compose.yml up -d rhs-frontend redis-database redis-insight
+```
+
 ### Step 2: Create the `movie_index` in Redis
-Run the command below once:
+Run the command below once.
+
+If you are using **GitHub Codespaces** or **Dev Containers**, use `-h redis-database`.
+
+```bash
+redis-cli -h redis-database FT.CREATE movie_index ON JSON PREFIX 1 "movie:" SCHEMA \
+  $.title AS title TEXT WEIGHT 1.0 \
+  $.year AS year NUMERIC SORTABLE \
+  $.plot AS plot TEXT WEIGHT 1.0 \
+  $.releaseDate AS releaseDate TAG \
+  $.rating AS rating NUMERIC SORTABLE \
+  $.actors[*] AS actors TAG \
+  $.plotEmbedding AS plotEmbedding VECTOR FLAT 6 TYPE FLOAT32 DIM 384 DISTANCE_METRIC COSINE
+```
+
+If you are using **Local development**, this also works:
+
 ```bash
 redis-cli FT.CREATE movie_index ON JSON PREFIX 1 "movie:" SCHEMA \
   $.title AS title TEXT WEIGHT 1.0 \
