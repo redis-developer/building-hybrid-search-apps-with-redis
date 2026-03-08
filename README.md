@@ -7,75 +7,76 @@
 [![Redis OM Spring](https://img.shields.io/badge/Redis%20OM-Spring-DC382D.svg)](https://github.com/redis/redis-om-spring)
 
 ## 🌟 Overview
-Welcome to this hands-on workshop where you'll design and implement modern search experiences with Redis. You start with a working Spring Boot app and evolve it step by step into a production-style hybrid search flow.
-
-By the end, you will have implemented:
-- full-text search (FTS)
-- vector similarity search (VSS)
-- native hybrid search
-- cache-aside for prompt embeddings
-
-![search.png](images/search.png)
+Welcome to this hands-on workshop where you'll design and implement modern search experiences with Redis. You start with a working HTML/JS + Spring Boot app that implements hybrid search manually and with an empty Redis database, and evolve it step by step into a production-style hybrid search flow. In this workshop, you will learn how to efficiently load JSON data into Redis, create field embeddings, leverage Redis's native hybrid search support, and implement the cache aside pattern for query reuse.
 
 ### 🤔 Why Hybrid Search?
-Search quality drops when you rely on a single strategy:
-- FTS alone can miss intent when wording changes
-- VSS alone can return semantically related but lexically weak matches
-- app-side fallback logic can increase complexity and latency
+Search quality drops when you disregard design principles like:
+- Full-text search alone can miss intent when wording changes even minimally
+- Vector search alone can return semantically related but lexically weak matches
+- App-side hybrid search logic can increase complexity and latency
 
 Hybrid search lets you combine lexical precision and semantic relevance in one retrieval flow.
 
 ### 🎯 What You'll Build
-Throughout this workshop, you'll build a complete Redis-powered movie search app with:
-- Redis JSON document modeling and indexing
-- Full-Text Search with Redis Query Engine
-- Vector search using embeddings
-- Native Redis hybrid search in the service layer
+By the end of this workshop, you'll build a complete Redis-powered search app with:
+- Redis JSON document data loading, modeling, and indexing
+- Native Redis hybrid search implemented with Spring Boot
 - Startup embedding regeneration for existing records
 - Prompt-embedding cache-aside via `Keyword` documents
 - Browser UI to validate behavior and latency
 
 ## 📋 Prerequisites
+
 ### Required knowledge
 - Basic Java and Spring Boot familiarity
-- Basic understanding of search concepts (keywords, ranking)
+- Basic understanding of search concepts
 - Familiarity with command-line tools
 - Basic understanding of Docker and Git
 
 ### Required software
+
 #### Option 1: GitHub Codespaces
 - GitHub account
 - Access to GitHub Codespaces (quota/billing enabled)
 - Browser or VS Code with Codespaces support
 
-#### Option 2: Local development
+#### Option 2: Dev Containers locally
+- [Docker](https://docs.docker.com/get-docker/)
+- Java IDE compatible with [Dev Containers](https://containers.dev/)
+  - [VS Code](https://code.visualstudio.com/)
+  - [IntelliJ IDEA](https://www.jetbrains.com/idea/)
+
+#### Option 3: Local development
 - [Java 21+](https://www.oracle.com/java/technologies/downloads)
 - [Maven 3.9+](https://maven.apache.org/install.html)
 - [Docker](https://docs.docker.com/get-docker/)
 - [Git](https://git-scm.com/install/)
 - [RIOT](https://redis.io/docs/latest/develop/tools/riot/)
+- [Redis Insight](https://redis.io/insight/)
 - Java IDE
 
 ### Required accounts
 No paid account is required for the core workshop flow. Everything can run locally with Docker.
 
 ## 🗺️ Workshop Structure
-This workshop is designed for ~90 minutes across 5 progressive labs.
+This workshop has an estimated duration of 1.5 hours and is organized into 5 progressive labs, each building on the previous one. Each lab introduces a specific technical challenge, which is then addressed in the subsequent lab.
 
 | Lab | Topic | Duration | Branch |
 |:----|:------|:---------|:-------|
-| 1 | [Get the search up and running](../../tree/lab-1-starter/README.md) | 20 mins | `lab-1-starter` |
-| 2 | [Importing data into Redis](../../tree/lab-2-starter/README.md) | 15 mins | `lab-2-starter` |
-| 3 | [Implementing embedding creation](../../tree/lab-3-starter/README.md) | 20 mins | `lab-3-starter` |
-| 4 | [Implementing native hybrid search](../../tree/lab-4-starter/README.md) | 20 mins | `lab-4-starter` |
-| 5 | [Caching prompt embedding](../../tree/lab-5-starter/README.md) | 15 mins | `lab-5-starter` |
+| 1 | [Get the search up and running](../../tree/lab-1-starter/README.md) | 20 mins  | `lab-1-starter` |
+| 2 | [Importing data into Redis](../../tree/lab-2-starter/README.md) | 10 mins  | `lab-2-starter` |
+| 3 | [Implementing embedding creation](../../tree/lab-3-starter/README.md) | 25 mins  | `lab-3-starter` |
+| 4 | [Implementing native hybrid search](../../tree/lab-4-starter/README.md) | 25 mins  | `lab-4-starter` |
+| 5 | [Caching prompt embedding](../../tree/lab-5-starter/README.md) | 10 mins  | `lab-5-starter` |
 
-Each lab also has a `lab-X-solution` branch with the completed implementation.
+Each lab also contains a corresponding `lab-X-solution` branch with the completed code for reference. You can use this branch to compare your current implementation using `git diff {lab-X-solution}`. Alternatively, you can switch to the solution branch at any time during the lab if you are falling behind or to get unstuck.
 
 ## 🚀 Getting Started
+
 ### Step 1: Choose your setup option
-Pick one of these options:
+Pick one of the setup options from the Prerequisites section:
 - GitHub Codespaces
+- Dev Containers locally
 - Local development
 
 ### Step 2: Start your workspace
@@ -83,47 +84,41 @@ If you're using **GitHub Codespaces**:
 - Create a new Codespace for this repository
 - Forward ports `8080`, `8081`, `5540`, and `6379`
 
+If you are using Dev Containers locally:
+- Clone the repository:
+  ```bash
+  git clone https://github.com/redis-developer/building-hybrid-search-apps-with-redis.git
+  ```
+- Open the project in a Dev Container. The instructions for doing this vary by IDE. Follow the guides for either [VS Code](https://code.visualstudio.com/docs/devcontainers/containers#_quick-start-open-an-existing-folder-in-a-container) or [IntelliJ IDEA](https://www.jetbrains.com/help/idea/start-dev-container-from-welcome-screen.html).
+
 If you're using **Local development**:
-```bash
-git clone https://github.com/redis-developer/building-hybrid-search-apps-with-redis.git
-cd building-hybrid-search-apps-with-redis
-java -version
-mvn -version
-docker --version
-git --version
-riot --version
-```
-
-### Step 3: Start infrastructure
-```bash
-docker compose up -d redis-database redis-insight rhs-frontend
-```
-
-### Step 4: Run backend
-```bash
-./mvnw spring-boot:run
-```
-
-Access points:
-- App UI: `http://localhost:8080/redis-movies-searcher`
-- API: `http://localhost:8081/search?query=star`
-- Redis Insight: `http://localhost:5540`
-
-### Step 5: Start the workshop
+- Clone the repository:
+  ```bash
+  git clone https://github.com/redis-developer/building-hybrid-search-apps-with-redis.git
+  ```
+- Verify the installed tools
+  ```bash
+  java -version
+  mvn -version
+  docker --version
+  git --version
+  riot --version
+  ```
+  
+### Step 3: Begin your First Lab
 ```bash
 git checkout lab-1-starter
 ```
-Follow the instructions in that branch README.
+Then follow the README instructions
 
 ## 📚 Resources
-- [Redis Query Engine](https://redis.io/docs/latest/develop/interact/search-and-query/)
-- [Redis Vector Search](https://redis.io/docs/latest/develop/ai/search-and-query/vectors/)
+- [Redis Search](https://redis.io/docs/latest/develop/interact/search-and-query/)
 - [Redis OM Spring](https://github.com/redis/redis-om-spring)
 - [RIOT Documentation](https://redis.io/docs/latest/develop/tools/riot/)
 - [Redis Insight](https://redis.io/insight/)
 
 ## 🤝 Contributing
-Contributions are welcome. Open an issue before submitting major changes.
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
 ## 👥 Maintainers
 - Ricardo Ferreira — [@riferrei](https://github.com/riferrei)
