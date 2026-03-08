@@ -23,6 +23,26 @@ services:
       redis-database:
         condition: service_healthy
 
+  rhs-frontend:
+    container_name: rhs-frontend
+    hostname: rhs-frontend
+    image: nginx:1.27.5
+    volumes:
+      - ../app/:/usr/share/nginx/html
+      - ../nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ../nginx/local-js.sh:/docker-entrypoint.d/local-js.sh
+    environment:
+      SEARCH_API: "http://localhost:8081/search"
+    ports:
+      - "8080:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost/redis-movies-searcher >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+      timeout: 5s
+    command: ["/bin/sh", "-c", "chmod +x /docker-entrypoint.d/local-js.sh && /docker-entrypoint.sh nginx -g 'daemon off;'"]
+
   redis-database:
     container_name: redis-database
     hostname: redis-database
