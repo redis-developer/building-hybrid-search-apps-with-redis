@@ -77,7 +77,9 @@ riot file-import \
     movies.json json.set --keyspace movie --key id
 ```
 
-> 💡 Keep in mind the `REDIS_URI` variable must match your chosen development option. For local development you must use `redis://localhost:6379`. However, for GitHub Codespaces/Dev Containers locally you must use: `redis://redis-database:6379` 
+> 💡 Keep `REDIS_URI` aligned with your setup:
+> - Local development: `redis://localhost:6379`
+> - GitHub Codespaces / Dev Containers: `redis://redis-database:6379`
 
 What this command does:
 - `file-import`: reads records from `movies.json`
@@ -106,7 +108,7 @@ You should get movie matches based on title terms from imported data.
 
 ### Redis Insight verification
 1. Open Redis Insight (`http://localhost:5540` or forwarded URL)
-2. Connect to `redis-database:6379`
+2. Connect to `redis-database:6379` (Codespaces/Dev Containers) or `localhost:6379` (Local development)
 3. Browse `movie:*` and confirm there are many imported records
 4. Open one sample document and validate fields (`title`, `plot`, `actors`, `rating`)
 5. Verify `movie_index` exists in indexes view
