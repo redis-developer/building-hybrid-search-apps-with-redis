@@ -21,7 +21,9 @@ public class SearchController {
             @RequestParam(required = true) String query,
             @RequestParam(required = false) Integer limit
     ) {
-        var matchedMovies = searchService.nativeHybridSearch(query, limit);
+        // Make sure to change the method call here from the current
+        // manualHybridSearch() to use nativeHybridSearch() instead
+        var matchedMovies = searchService.manualHybridSearch(query, limit);
         return Map.of(
                 "resultType", matchedMovies.getSecond().name(),
                 "matchedMovies", matchedMovies.getFirst()
