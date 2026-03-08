@@ -97,6 +97,37 @@ Your application now implements an end-to-end search experience with:
 - Add TTL and invalidation strategies for keyword embeddings
 - Add normalization and deduplication for query variants
 
+## 🏅 Certification of Completion
+
+You've demonstrated proficiency in:
+
+- ✅ Redis JSON modeling and index-first search setup
+- ✅ Structured data ingestion with RIOT
+- ✅ Embedding lifecycle management for existing records
+- ✅ Native hybrid search design and implementation
+- ✅ Cache-aside strategy for prompt embeddings
+- ✅ End-to-end workshop environment setup (Docker/Codespaces/Dev Containers)
+- ✅ Production-oriented search application design with Redis
+
+## 🙏 Acknowledgments
+
+This workshop was made possible by:
+
+- Redis Developer Relations team
+- Redis OSS and product engineering communities
+- All workshop participants and contributors
+
+## 📬 Feedback and Support
+
+- **Workshop Issues**: [GitHub Issues](https://github.com/redis-developer/building-hybrid-search-apps-with-redis/issues)
+- **Improvements**: PRs are welcome!
+
+---
+
+Thank you for joining this hybrid search journey!
+
+You're now equipped with the knowledge and tools to build production-ready search applications with Redis. Go build something awesome.
+
 ## 📚 Resources
 - [Redis Query Engine](https://redis.io/docs/latest/develop/interact/search-and-query/)
 - [Redis Vector Search](https://redis.io/docs/latest/develop/ai/search-and-query/vectors/)
