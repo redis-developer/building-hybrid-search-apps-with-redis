@@ -17,9 +17,9 @@ public class RedisMoviesSearcher {
 
     @Bean
     CommandLineRunner loadData(MovieService movieService) {
-        return args -> {
-            movieService.regenerateMissingEmbeddings();
-        };
+        // Make sure to implement the call to regenerate
+        // the embeddings during the application startup
+        return null;
     }
 
 }
