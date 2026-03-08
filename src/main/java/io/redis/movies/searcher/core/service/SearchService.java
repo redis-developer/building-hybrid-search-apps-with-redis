@@ -5,7 +5,6 @@ import com.redis.om.spring.search.stream.EntityStream;
 import io.redis.movies.searcher.core.domain.*;
 import io.redis.movies.searcher.core.dto.MovieDTO;
 import com.redis.om.spring.vectorize.Embedder;
-import io.redis.movies.searcher.core.repository.KeywordRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -22,12 +21,10 @@ public class SearchService {
 
     private final EntityStream entityStream;
     private final Embedder embedder;
-    private final KeywordRepository keywordRepository;
 
-    public SearchService(EntityStream entityStream, Embedder embedder, KeywordRepository keywordRepository) {
+    public SearchService(EntityStream entityStream, Embedder embedder) {
         this.entityStream = entityStream;
         this.embedder = embedder;
-        this.keywordRepository = keywordRepository;
     }
 
     public Pair<List<MovieDTO>, ResultType> manualHybridSearch(String query, Integer limit) {
@@ -91,7 +88,7 @@ public class SearchService {
 
         // Create the embedding for the query
         var embeddingStartTime = System.currentTimeMillis();
-        float[] queryAsVector = getQueryAsVectorUsingKeyword(query);
+        float[] queryAsVector = getQueryAsVector(query);
         var embeddingEndTime = System.currentTimeMillis();
         logger.info("Embedding took {} ms", embeddingEndTime - embeddingStartTime);
 
@@ -139,14 +136,6 @@ public class SearchService {
         }
 
         return buffer.array();
-    }
-
-    private float[] getQueryAsVectorUsingKeyword(String query) {
-        return entityStream.of(Keyword.class)
-                .filter(Keyword$.VALUE.containing(query))
-                .findFirst()
-                .map(Keyword::getEmbedding)
-                .orElseGet(() -> keywordRepository.save(new Keyword(query)).getEmbedding());
     }
 
     private List<MovieDTO> convertToDTOs(List<Movie> movies) {
