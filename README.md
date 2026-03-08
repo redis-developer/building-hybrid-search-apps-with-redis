@@ -4,7 +4,7 @@
 By the end of this lab, you will:
 - Run the full workshop stack in your selected environment (Codespaces, Dev Containers, or Local development)
 - Understand the baseline search architecture used across the workshop
-- Create the RediSearch index manually for the first run
+- Observe the RediSearch index creation on the first app run
 - Validate the API and UI are operational before loading data
 - Understand the initial search path (`manualHybridSearch`) and core domain model
 
@@ -48,8 +48,27 @@ Before starting, confirm the checklist for the setup option you selected:
 > 💡 For GitHub Codespaces and Dev Containers, use the forwarded URL from the Ports panel for browser access.  
 > Use sidecar service DNS names from the workspace terminal when needed (for example, `redis-database`).
 
-### Step 1: Start infrastructure services
-If you are running the workshop from **Local development**, run:
+### Step 1: Inspect the frontend layer
+Take a quick look at the frontend code to understand what the UI is doing before you run the app.
+
+Key files:
+- `app/index.html`
+- `app/scripts/script.js`
+- `app/scripts/apis.js`
+- `nginx/nginx.conf`
+
+### Step 2: Inspect the backend layer
+Review the core backend classes to understand how search requests are handled.
+
+Key files:
+- `src/main/java/io/redis/movies/searcher/core/controller/SearchController.java`
+- `src/main/java/io/redis/movies/searcher/core/service/SearchService.java`
+- `src/main/java/io/redis/movies/searcher/core/domain/Movie.java`
+- `src/main/java/io/redis/movies/searcher/core/domain/ResultType.java`
+- `src/main/java/io/redis/movies/searcher/RedisMoviesSearcher.java`
+
+### Step 3: Start infrastructure services
+If you are running from **Local development**, run:
 
 ```bash
 docker compose up -d redis-database redis-insight rhs-frontend
@@ -62,46 +81,38 @@ If needed, start them manually with:
 docker compose -f .devcontainer/docker-compose.yml up -d rhs-frontend redis-database redis-insight
 ```
 
-### Step 2: Create the `movie_index` in Redis
-Run the command below once.
-
-If you are using **GitHub Codespaces** or **Dev Containers**, use `-h redis-database`.
+### Step 4: Build and start the backend
 
 ```bash
-redis-cli -h redis-database FT.CREATE movie_index ON JSON PREFIX 1 "movie:" SCHEMA \
-  $.title AS title TEXT WEIGHT 1.0 \
-  $.year AS year NUMERIC SORTABLE \
-  $.plot AS plot TEXT WEIGHT 1.0 \
-  $.releaseDate AS releaseDate TAG \
-  $.rating AS rating NUMERIC SORTABLE \
-  $.actors[*] AS actors TAG \
-  $.plotEmbedding AS plotEmbedding VECTOR FLAT 6 TYPE FLOAT32 DIM 384 DISTANCE_METRIC COSINE
-```
-
-If you are using **Local development**, this also works:
-
-```bash
-redis-cli FT.CREATE movie_index ON JSON PREFIX 1 "movie:" SCHEMA \
-  $.title AS title TEXT WEIGHT 1.0 \
-  $.year AS year NUMERIC SORTABLE \
-  $.plot AS plot TEXT WEIGHT 1.0 \
-  $.releaseDate AS releaseDate TAG \
-  $.rating AS rating NUMERIC SORTABLE \
-  $.actors[*] AS actors TAG \
-  $.plotEmbedding AS plotEmbedding VECTOR FLAT 6 TYPE FLOAT32 DIM 384 DISTANCE_METRIC COSINE
-```
-
-### Step 3: Start the backend
-```bash
+./mvnw clean package
 ./mvnw spring-boot:run
 ```
 
-### Step 4: Open the app
+### Step 5: Test the API
+Run a simple query:
+
+```bash
+curl "http://localhost:8081/search?query=star"
+```
+
+At this stage, data has not been imported yet, so you should not expect real movie matches.
+
+### Step 6: Open the app and perform searches
+Open:
 - UI: `http://localhost:8080/redis-movies-searcher`
-- API: `http://localhost:8081/search?query=star`
 - Redis Insight: `http://localhost:5540`
 
-If you are using **GitHub Codespaces** or **Dev Containers**, use the forwarded URLs from the Ports panel.
+In the UI:
+1. Type a few search terms
+2. Confirm there are no UI errors
+3. Watch backend logs and confirm requests are being processed without failures
+
+If you are using **GitHub Codespaces** or **Dev Containers**, use forwarded URLs from the Ports panel.
+
+### Step 7: Inspect Redis behavior in Redis Insight
+Use Redis Insight to validate what happened in Redis:
+- Confirm there are no `movie:*` records yet
+- Confirm the search index exists (`movie_index`)
 
 ## 🧪 Testing Your Setup
 > 💡 In GitHub Codespaces or Dev Containers, use `redis-cli -h redis-database ...` from the workspace terminal.
@@ -163,18 +174,16 @@ Verify backend is reachable at `http://localhost:8081/search` and CORS is config
 </details>
 
 <details>
-<summary>Index creation fails</summary>
+<summary>Index is not created on startup</summary>
 
-If index already exists:
+Check backend startup logs for index creation errors, then verify index state:
+
 ```bash
-redis-cli -h redis-database FT.DROPINDEX movie_index
+redis-cli -h redis-database FT.INFO movie_index
 ```
-Then run `FT.CREATE` again.
-
-If you are using **Local development**, this also works:
 
 ```bash
-redis-cli FT.DROPINDEX movie_index
+redis-cli FT.INFO movie_index
 ```
 </details>
 
