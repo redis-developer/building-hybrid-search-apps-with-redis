@@ -7,7 +7,7 @@ By the end of this lab, you will:
 - Switch controller execution from manual hybrid to native hybrid
 - Compare relevance and latency behavior with the previous approach
 
-#### 🕗 Estimated Time: 20 minutes
+#### 🕗 Estimated Time: 25 minutes
 
 ## 🏗️ What You're Building
 In this lab, you'll move from app-orchestrated manual search composition to native Redis hybrid search.
