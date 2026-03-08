@@ -91,7 +91,11 @@ public class SearchService {
 
         // Create the embedding for the query
         var embeddingStartTime = System.currentTimeMillis();
-        float[] queryAsVector = getQueryAsVectorUsingKeyword(query);
+
+        // Make sure to change the method call here to
+        // invoke the getQueryAsVectorUsingKeyword instead
+        float[] queryAsVector = getQueryAsVector(query);
+
         var embeddingEndTime = System.currentTimeMillis();
         logger.info("Embedding took {} ms", embeddingEndTime - embeddingStartTime);
 
@@ -142,11 +146,8 @@ public class SearchService {
     }
 
     private float[] getQueryAsVectorUsingKeyword(String query) {
-        return entityStream.of(Keyword.class)
-                .filter(Keyword$.VALUE.containing(query))
-                .findFirst()
-                .map(Keyword::getEmbedding)
-                .orElseGet(() -> keywordRepository.save(new Keyword(query)).getEmbedding());
+        // Implement this method so it can use the Keyword class
+        return null;
     }
 
     private List<MovieDTO> convertToDTOs(List<Movie> movies) {
