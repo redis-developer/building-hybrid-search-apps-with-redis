@@ -1,6 +1,9 @@
 #!/bin/bash
 
+REDIS_URI="${REDIS_URI:-redis://redis-database:6379}"
+
 riot file-import \
+    --uri "$REDIS_URI" \
     --var counter="new java.lang.Integer(1)" \
     --proc id="#counter++" \
     --proc plot="info.plot" \
