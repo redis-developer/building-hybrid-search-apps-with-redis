@@ -20,22 +20,22 @@
     "storage": "32gb"
   },
   "forwardPorts": [
-    8080,
-    8081,
-    5540,
-    6379
+    "rhs-frontend:80",
+    "workspace:8081",
+    "redis-insight:5540",
+    "redis-database:6379"
   ],
   "portsAttributes": {
-    "8080": {
+    "rhs-frontend:80": {
       "label": "Frontend"
     },
-    "8081": {
+    "workspace:8081": {
       "label": "Backend API"
     },
-    "5540": {
+    "redis-insight:5540": {
       "label": "Redis Insight"
     },
-    "6379": {
+    "redis-database:6379": {
       "label": "Redis"
     }
   },
