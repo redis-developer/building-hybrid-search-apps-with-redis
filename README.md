@@ -45,8 +45,8 @@ Before starting, confirm the checklist for the setup option you selected:
 - [ ] No previous lab required (this is the workshop entry point)
 
 ## 🚀 Setup Instructions
-> 💡 For GitHub Codespaces and Dev Containers, use the forwarded URL from the Ports panel for browser access.  
-> Use sidecar service DNS names from the workspace terminal when needed (for example, `redis-database`).
+> 💡 If you are using either GitHub Codespaces or Dev Containers, you must use the forwarded URL from the Ports panel for proper access. Also, you may use the sidecar service DNS names from the workspace terminal when needed, such as using `redis-database` to access Redis.
+> ![port-mappings.png](images/port-mappings.png)
 
 ### Step 1: Inspect the frontend layer
 Take a quick look at the frontend code to understand what the UI is doing before you run the app.
@@ -71,7 +71,7 @@ Key files:
 If you are running from **Local development**, run:
 
 ```bash
-docker compose up -d redis-database redis-insight rhs-frontend
+docker compose up -d
 ```
 
 If you are using **GitHub Codespaces** or **Dev Containers**, these services are started automatically with the environment.
@@ -86,17 +86,21 @@ If you are using **GitHub Codespaces** or **Dev Containers**, these services are
 > 💡 From this point on, every time you change backend code, rebuild and run the backend again before validating behavior.
 
 ## 🧪 Testing Your Setup
+
 ### API reachability test
+
+To check if the backend is working as expected, let's perform an API call. Use the endpoint `http://localhost:8081` if it is running locally, or the forwarded URL. For example:
+
 ```bash
 curl "http://localhost:8081/search?query=star"
 ```
 You should get a JSON payload with `resultType` and `matchedMovies`.
 
 ### UI verification
-1. Open `http://localhost:8080/redis-movies-searcher`
-2. Type any query
-3. Confirm there are no UI errors
-4. Check backend logs and confirm requests are being processed without failures
+1. Open the frontend (`http://localhost:8080/redis-movies-searcher` or forwarded URL)
+2. Type any query. It can be as simple as `star`
+3. After typing it, confirm there are no UI errors
+4. Check backend logs and confirm requests came
 
 ### Redis verification
 Use Redis Insight to inspect what happened at Redis level:
