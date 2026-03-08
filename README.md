@@ -63,10 +63,6 @@ Open `data/import-movies.sh`.
 
 In this branch, the script still contains a TODO placeholder. Replace it with:
 
-Before running the command, set `REDIS_URI` to match your environment:
-- Local development: use `redis://localhost:6379`
-- GitHub Codespaces / Dev Containers: use `redis://redis-database:6379`
-
 ```bash
 REDIS_URI="${REDIS_URI:-redis://localhost:6379}"
 
@@ -80,6 +76,8 @@ riot file-import \
     --proc actors="info.actors != null ? remove('info').actors : null" \
     movies.json json.set --keyspace movie --key id
 ```
+
+> 💡 Keep in mind the `REDIS_URI` variable must match your chosen development option. For local development you must use `redis://localhost:6379`. However, for GitHub Codespaces/Dev Containers locally you must use: `redis://redis-database:6379` 
 
 What this command does:
 - `file-import`: reads records from `movies.json`
