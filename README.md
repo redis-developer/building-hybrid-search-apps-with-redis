@@ -47,12 +47,18 @@ Before starting, confirm the checklist for the setup option you selected:
 > 💡 For GitHub Codespaces and Dev Containers, use forwarded URLs from the Ports panel for browser access.  
 > From workspace terminals, prefer service DNS names (for example, `redis-database`) when connecting to Redis.
 
-### Step 1: Open the import script
-File: `data/import-movies.sh`
+### Step 1: Inspect the data import layer
+Open `data/import-movies.sh` and review how RIOT will map source fields into Redis JSON documents.
 
 In this branch, the script still contains a TODO placeholder.
 
-### Step 2: Implement the RIOT import command
+### Step 2: Inspect the backend search layer
+Review how imported data is consumed by the API:
+- `src/main/java/io/redis/movies/searcher/core/domain/Movie.java`
+- `src/main/java/io/redis/movies/searcher/core/controller/SearchController.java`
+- `src/main/java/io/redis/movies/searcher/core/service/SearchService.java`
+
+### Step 3: Implement the RIOT import command
 Replace the TODO with:
 ```bash
 riot file-import \
@@ -65,7 +71,7 @@ riot file-import \
     movies.json json.set --keyspace movie --key id
 ```
 
-### Step 3: Run the import
+### Step 4: Run the import
 If you are using **Local development**, run:
 
 ```bash
@@ -77,30 +83,28 @@ cd ..
 
 If you are using **GitHub Codespaces** or **Dev Containers**, run the same command from the workspace terminal.
 
+> 💡 From this point on, every time you change backend code, rebuild and run the backend again before validating behavior.
+
 ## 🧪 Testing Your Import
-### Validate key count
-```bash
-redis-cli --scan --pattern "movie:*" | wc -l
-```
-You should see a non-zero count (thousands of records).
-
-### Inspect a sample record
-```bash
-redis-cli JSON.GET movie:1
-```
-Confirm fields like `title`, `plot`, `actors`, and `rating` exist.
-
-### Search verification (FTS)
+### API verification (FTS)
 ```bash
 curl "http://localhost:8081/search?query=Tom%20Hanks"
 ```
 You should get movie matches from imported data.
 
-### Redis Insight check
-1. Open `http://localhost:5540`
+### UI verification
+1. Open `http://localhost:8080/redis-movies-searcher` (or forwarded URL)
+2. Search for a few known terms (for example, `star`, `Tom Hanks`)
+3. Confirm there are no UI errors
+4. Check backend logs and confirm responses are being returned
+
+### Redis Insight verification
+1. Open Redis Insight (`http://localhost:5540` or forwarded URL)
 2. Connect to `redis-database:6379`
-3. Browse `movie:*` keys
-4. Run: `FT.SEARCH movie_index "@title:star" LIMIT 0 5`
+3. Browse `movie:*` and confirm there are many imported records
+4. Open one sample document and validate fields (`title`, `plot`, `actors`, `rating`)
+5. Verify `movie_index` exists in indexes view
+6. Run: `FT.SEARCH movie_index "@title:star" LIMIT 0 5` from Redis Insight and confirm results
 
 ## 🎨 Understanding the Code
 ### 1. `import-movies.sh`
@@ -134,10 +138,10 @@ riot --version
 <details>
 <summary>Imported data is not searchable</summary>
 
-Confirm `movie_index` exists and matches JSON paths:
-```bash
-redis-cli FT.INFO movie_index
-```
+Confirm in Redis Insight that:
+- `movie_index` exists
+- `movie:*` keys were created
+- document fields match index paths
 </details>
 
 <details>
