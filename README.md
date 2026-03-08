@@ -235,10 +235,10 @@ With embeddings generated, vector search can contribute results for semantic que
 - Ensures regeneration runs automatically on startup
 - Keeps workshop flow reproducible
 
-### 3. Why this matters
-- Lab 2 imported data quickly
-- This lab makes that same data vector-searchable without reimport
-- Without this step, vector search has no embeddings to compare against
+### 3. `MovieRepository`
+- Provides `findAllById(...)` so `MovieService` can load movies in controlled batches.
+- Provides `saveAll(...)` so backfill updates are persisted efficiently.
+- Acts as the bridge between startup embedding logic and Redis document storage.
 
 ## 🔍 What's Still Missing?
 At this stage, the app supports manual hybrid behavior with embeddings, but:
