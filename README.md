@@ -92,19 +92,7 @@ curl "http://localhost:8081/search?query=star"
 
 At this stage, data has not been imported yet, so you should not expect real movie matches.
 
-### Step 6: Open the app and perform searches
-Open:
-- UI: `http://localhost:8080/redis-movies-searcher`
-- Redis Insight: `http://localhost:5540`
-
-In the UI:
-1. Type a few search terms
-2. Confirm there are no UI errors
-3. Watch backend logs and confirm requests are being processed without failures
-
-If you are using **GitHub Codespaces** or **Dev Containers**, use forwarded URLs from the Ports panel.
-
-### Step 7: Inspect Redis behavior in Redis Insight
+### Step 6: Inspect Redis behavior in Redis Insight
 Use Redis Insight to validate what happened in Redis:
 - Confirm there are no `movie:*` records yet
 - Confirm the search index exists (`movie_index`)
