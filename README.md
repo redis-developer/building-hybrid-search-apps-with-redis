@@ -15,11 +15,8 @@ In this lab, you'll add a startup pipeline that backfills embeddings for previou
 
 This includes:
 - **`loadData()` in `RedisMoviesSearcher`** to trigger regeneration on startup
-- **`MovieService.regenerateMissingEmbeddings()`** implementation
+- **`MovieService.regenerateMissingEmbeddings()`** embedding creation implementation
 - **`MovieRepository` usage** (`findAllById`, `saveAll`) to process movie batches
-
-### Architecture Overview
-![search.png](images/search.png)
 
 ## 📋 Prerequisites Check
 Before starting, confirm the checklist for the setup option you selected:
@@ -50,7 +47,7 @@ Before starting, confirm the checklist for the setup option you selected:
 ### Step 1: Implement startup hook
 Open `src/main/java/io/redis/movies/searcher/RedisMoviesSearcher.java`.
 
-In this branch, `loadData(...)` returns `null`.
+In this class, `loadData(...)` returns `null`.
 
 Replace this:
 ```java
@@ -78,11 +75,8 @@ Open `src/main/java/io/redis/movies/searcher/core/service/MovieService.java`.
 You will see a new service class in this lab: `MovieService`.
 
 Its responsibility is to:
-- Scan Redis for `movie:*` keys
-- Load movies in batches
-- Persist only movies missing `plotEmbedding` so embeddings are generated
-
-Also note `MovieRepository` (`src/main/java/io/redis/movies/searcher/core/repository/MovieRepository.java`), which provides the persistence operations used by this flow.
+- Scan Redis for records with `movie:*` keys
+- Process only movies missing `plotEmbedding`
 
 Now replace this:
 ```java
@@ -189,6 +183,13 @@ public void regenerateMissingEmbeddings() {
 }
 ```
 
+What this code does:
+- Scans Redis using `SCAN movie:*` to collect all movie IDs without blocking Redis.
+- Loads movies in batches and keeps only records that have a `plot` but no `plotEmbedding`.
+- Saves eligible batches via `movieRepository.saveAll(...)`, which triggers embedding generation.
+- Uses bounded concurrency (`maxWorkers`) to avoid memory spikes while still processing in parallel.
+- Logs progress and total execution time, and exits quickly when no backfill is needed.
+
 ### Step 3: Rebuild and run
 If you are using **Local development**, run:
 
@@ -200,7 +201,7 @@ If you are using **Local development**, run:
 If you are using **GitHub Codespaces** or **Dev Containers**, run the same command from the workspace terminal.
 
 Important behavior:
-- On first run after Lab 2, startup can take longer because the app scans Redis and generates missing embeddings.
+- Startup now can take longer because the app need to create the embeddings.
 - On later runs, if embeddings are already present, startup is much faster.
 - This backfill is required for vector search to return meaningful results.
 
@@ -216,7 +217,7 @@ Expect logs similar to:
 1. Open Redis Insight (`http://localhost:5540` or forwarded URL)
 2. Connect to `redis-database:6379` (Codespaces/Dev Containers) or your local Redis endpoint
 3. Browse `movie:*` documents
-4. Open a movie and verify `plotEmbedding` now exists
+4. Open a movie and verify of the field `plotEmbedding` now exists
 
 ### Semantic query check
 ```bash
