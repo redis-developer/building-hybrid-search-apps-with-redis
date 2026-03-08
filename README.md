@@ -1,16 +1,12 @@
 ## 🏆 Congratulations!
 
-You've successfully completed the **Building Hybrid Search Apps with Redis** workshop and built a complete hybrid search application with Java, Spring Boot, and Redis.
-
-This branch contains the full implementation of everything covered throughout the workshop, including data ingestion, embedding generation, native hybrid search, and prompt-embedding cache-aside.
+You've successfully completed the Building Hybrid Search Apps with Redis workshop and built a complete hybrid search application with Java, Spring Boot, and Redis. This complete implementation showcases how to implement data ingestion, embedding generation, native hybrid search, and prompt-embedding cache-aside.
 
 ## 🎯 What You've Built
 
 ### Complete Hybrid Search System
 
-Your application now implements an end-to-end search experience with:
-
-![search.png](images/search.png)
+Your application now implements an end-to-end search experience.
 
 ## 📚 Hybrid Search Techniques Implemented
 
@@ -35,7 +31,7 @@ Your application now implements an end-to-end search experience with:
 - **Implementation**: `MovieService.regenerateMissingEmbeddings()` + startup hook
 - **Benefits**:
   - Existing documents become vector-search ready
-  - No need to re-import source data
+  - No need to re-import source data or built ETL pipelines
   - Predictable startup enrichment workflow
 
 ### 4. **Native Hybrid Search with Redis** (Lab 4)
@@ -43,8 +39,8 @@ Your application now implements an end-to-end search experience with:
 - **Implementation**: `SearchService.nativeHybridSearch(...)`
 - **Benefits**:
   - Better relevance by combining keyword and semantic signals
-  - Less app-side orchestration complexity
-  - Cleaner retrieval pipeline
+  - Less app-side orchestration complexity an reranking code
+  - Cleaner and faster retrieval pipeline
 
 ### 5. **Prompt Embedding Cache-Aside** (Lab 5)
 - **Technique**: Reuse query embeddings for recurring prompts
@@ -62,7 +58,7 @@ Your application now implements an end-to-end search experience with:
 - **Redis OM Spring**: repository-based modeling and query abstractions
 
 ### Data and Search Components
-- **Redis Query Engine**: full-text, vector, and hybrid capabilities
+- **Redis Search**: full-text, vector, and hybrid capabilities
 - **Redis JSON**: document storage model for movie and keyword entities
 - **RIOT**: high-volume JSON import and transformation tooling
 
@@ -73,11 +69,11 @@ Your application now implements an end-to-end search experience with:
 
 ## 🎓 Concepts Learned
 
-1. **Lexical vs Semantic Retrieval**: understanding precision vs intent
-2. **Hybrid Ranking Design**: combining text and vector scores
-3. **Embedding Lifecycle Management**: when and how to generate vectors
-4. **Cache-Aside Strategy**: reducing repeated expensive operations
-5. **Redis Data Modeling**: designing JSON documents and indexes for search
+1. **Redis Data Modeling**: designing JSON documents and indexes for search
+2. **Lexical vs Semantic Retrieval**: understanding precision vs intent
+3. **Hybrid Ranking Design**: combining text and vector scores
+4. **Embedding Lifecycle Management**: when and how to generate vectors
+5. **Cache-Aside Strategy**: reducing repeated expensive operations
 
 ## 🚀 Next Steps for Your Journey
 
@@ -87,27 +83,26 @@ Your application now implements an end-to-end search experience with:
 
 ### 2. Add Observability for Search Quality
 - Include response metadata (`mode`, `timings`, `result counts`)
-- Track latency and relevance drift over time
+- Track latency and relevance drift over time and edge cases
 
 ### 3. Add Automated Validation
-- Add lab-level tests for each milestone
+- Add lab-level tests for each milestone developed
 - Add benchmark scripts for latency and relevance comparisons
 
 ### 4. Expand Cache-Aside Capabilities
 - Add TTL and invalidation strategies for keyword embeddings
 - Add normalization and deduplication for query variants
+- Experiment with Redis LangCache for semantic caching
 
 ## 🏅 Certification of Completion
 
 You've demonstrated proficiency in:
 
 - ✅ Redis JSON modeling and index-first search setup
-- ✅ Structured data ingestion with RIOT
+- ✅ Structured JSON data ingestion with RIOT
 - ✅ Embedding lifecycle management for existing records
 - ✅ Native hybrid search design and implementation
 - ✅ Cache-aside strategy for prompt embeddings
-- ✅ End-to-end workshop environment setup (Docker/Codespaces/Dev Containers)
-- ✅ Production-oriented search application design with Redis
 
 ## 🙏 Acknowledgments
 
@@ -124,24 +119,6 @@ This workshop was made possible by:
 
 ---
 
-Thank you for joining this hybrid search journey!
+**Thank you for joining this hybrid search journey!**
 
-You're now equipped with the knowledge and tools to build production-ready search applications with Redis. Go build something awesome.
-
-## 📚 Resources
-- [Redis Query Engine](https://redis.io/docs/latest/develop/interact/search-and-query/)
-- [Redis Vector Search](https://redis.io/docs/latest/develop/ai/search-and-query/vectors/)
-- [Redis OM Spring](https://github.com/redis/redis-om-spring)
-- [RIOT Documentation](https://redis.io/docs/latest/develop/tools/riot/)
-- [Redis Insight](https://redis.io/insight/)
-
-## 🤝 Contributing
-Contributions and improvements are welcome.
-- Open an issue for proposals
-- Submit pull requests for enhancements and fixes
-
-## 👥 Maintainers
-- Ricardo Ferreira — [@riferrei](https://github.com/riferrei)
-
-## 📄 License
-This project is licensed under the [MIT License](./LICENSE).
+You're now equipped with the knowledge and tools to build production-ready search applications with Redis. Go forth and build amazing things! 🚀
