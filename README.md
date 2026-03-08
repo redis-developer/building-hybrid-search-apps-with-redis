@@ -22,13 +22,31 @@ This includes:
 ![search.png](images/search.png)
 
 ## 📋 Prerequisites Check
-Before starting, ensure you have:
-- [ ] Completed Lab 2 successfully
+Before starting, confirm the checklist for the setup option you selected:
+
+### Option 1: GitHub Codespaces
+- [ ] Codespace is running for this repository
+- [ ] Ports `8080`, `8081`, `5540`, and `6379` are forwarded
+- [ ] Lab 2 completed in this Codespace environment
+
+### Option 2: Dev Containers locally
+- [ ] Project opened in your IDE Dev Container
+- [ ] Containers are healthy and ports are available/forwarded
+- [ ] Lab 2 completed in this Dev Container environment
+
+### Option 3: Local development
+- [ ] Local Docker environment is running
+- [ ] Lab 2 completed locally
+- [ ] Redis, frontend, and backend services are up
+
+### Lab-specific requirements
 - [ ] Dataset imported into Redis (`movie:*` keys exist)
-- [ ] Backend runs locally
 - [ ] `movie_index` already created
 
 ## 🚀 Setup Instructions
+> 💡 For GitHub Codespaces and Dev Containers, use forwarded URLs from the Ports panel for browser access.  
+> From workspace terminals, prefer service DNS names (for example, `redis-database`) when connecting to Redis.
+
 ### Step 1: Implement startup hook
 Open `src/main/java/io/redis/movies/searcher/RedisMoviesSearcher.java`.
 
@@ -53,10 +71,14 @@ Implement logic to:
 - Log progress and completion stats
 
 ### Step 3: Rebuild and run
+If you are using **Local development**, run:
+
 ```bash
 ./mvnw clean package
 ./mvnw spring-boot:run
 ```
+
+If you are using **GitHub Codespaces** or **Dev Containers**, run the same command from the workspace terminal.
 
 Watch startup logs for embedding regeneration progress.
 
