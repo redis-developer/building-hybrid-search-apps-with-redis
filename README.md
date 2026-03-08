@@ -1,156 +1,163 @@
-# Building Hybrid Search Apps with Redis (Java Workshop)
+# Lab 1: Get the Search Up and Running
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Java 21+](https://img.shields.io/badge/Java-21%2B-blue.svg)](https://www.oracle.com/java/technologies/downloads)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.0-6DB33F.svg)](https://spring.io/projects/spring-boot)
-[![Redis Query Engine](https://img.shields.io/badge/Redis-Query%20Engine-DC382D.svg)](https://redis.io/docs/latest/develop/interact/search-and-query/)
-[![Redis OM Spring](https://img.shields.io/badge/Redis%20OM-Spring-DC382D.svg)](https://github.com/redis/redis-om-spring)
+## 🎯 Learning Objectives
 
-## Overview
-Welcome to this hands-on workshop, where you'll learn how to design and build modern search experiences using Redis. You will start with a working Spring Boot application and progressively evolve it from basic full-text search into advanced hybrid search with embeddings, native Redis hybrid search, and embedding cache-aside.
+By the end of this lab, you will:
+- Run the full workshop stack locally (frontend, backend, Redis, Redis Insight)
+- Understand the baseline search architecture used across the workshop
+- Create the RediSearch index manually for the first run
+- Validate the API and UI are working even before loading data
+- Understand the initial search path (`manualHybridSearch`) and core domain model
 
-This workshop uses a movie-search domain because it naturally demonstrates the difference between:
-- lexical matching (what users type exactly)
-- semantic matching (what users mean)
-- hybrid ranking (combining both approaches)
+#### 🕗 Estimated Time: 20 minutes
+
+## 🏗️ What You're Building
+
+In this foundational lab, you'll deploy the base movie search application and prepare Redis for queries.
+
+This includes:
+- **Frontend (NGINX)**: Search UI for movie lookup testing
+- **Spring Boot API**: `/search` endpoint for query execution
+- **Redis 8 + Query Engine**: Storage and indexing layer
+- **Initial Search Strategy**: Manual hybrid method already implemented in the codebase
+
+### Architecture Overview
 
 ![search.png](images/search.png)
 
-### Why Hybrid Search?
+## 📋 Prerequisites Check
 
-Search UX breaks down when you rely on a single strategy:
-- FTS alone misses intent when query wording differs from stored text
-- VSS alone can surface semantically related but lexically irrelevant results
-- ad hoc fallback logic adds latency and complexity
+Before starting, ensure you have:
 
-Hybrid search lets you balance precision and semantic relevance in one retrieval flow.
+- [ ] Java 21+
+- [ ] Maven 3.9+
+- [ ] Docker up and running
+- [ ] Git configured
 
-### What you'll build
+If you are using GitHub Codespaces, make sure ports `8080`, `8081`, `6379`, and `5540` are forwarded.
 
-By the end of this workshop, you'll have built a complete Redis-powered search application featuring:
-- Redis JSON document modeling and indexing for movies
-- Full-Text Search (FTS) with Redis Query Engine
-- Vector Similarity Search (VSS) with embeddings
-- Native hybrid search using Redis support
-- Startup embedding generation flow
-- Cache-aside for recurring prompt embeddings via `Keyword` documents
-- A browser UI to compare behavior and latency across strategies
+## 🚀 Setup Instructions
 
-## Prerequisites
-
-### Required knowledge
-- Basic Java and Spring Boot familiarity
-- Basic understanding of search concepts (keywords, ranking)
-- Familiarity with command-line tools
-- Basic understanding of Docker and Git
-
-### Required software
-
-#### Option 1: GitHub Codespaces
-- GitHub account
-- Access to GitHub Codespaces (quota/billing enabled)
-- Browser or VS Code with Codespaces support
-
-#### Option 2: Local development
-- [Java 21+](https://www.oracle.com/java/technologies/downloads)
-- [Maven 3.9+](https://maven.apache.org/install.html)
-- [Docker](https://docs.docker.com/get-docker/)
-- [Git](https://git-scm.com/install/)
-- [RIOT](https://redis.io/docs/latest/develop/tools/riot/) (for dataset import labs)
-- Java IDE
-
-### Required accounts
-
-No paid account is required for the core workshop flow. Everything can run locally with Docker.
-
-## Workshop Structure
-
-This workshop has an estimated duration of 90 minutes and is organized into 5 progressive labs.
-
-| Lab | Topic | Duration | Branch |
-|:----|:------|:---------|:-------|
-| 1 | [Get the search up and running](../../tree/lab-1-starter/README.md) | 20 mins | `lab-1-starter` |
-| 2 | [Importing data into Redis](../../tree/lab-2-starter/README.md) | 15 mins | `lab-2-starter` |
-| 3 | [Implementing embedding creation](../../tree/lab-3-starter/README.md) | 20 mins | `lab-3-starter` |
-| 4 | [Implementing native hybrid search](../../tree/lab-4-starter/README.md) | 20 mins | `lab-4-starter` |
-| 5 | [Caching prompt embedding](../../tree/lab-5-starter/README.md) | 15 mins | `lab-5-starter` |
-
-Each lab also has a corresponding `lab-X-solution` branch with the completed code for reference. You can compare your implementation using:
+### Step 1: Start Infrastructure Services
 
 ```bash
-git diff lab-X-solution
+docker compose up -d redis-database redis-insight rhs-frontend
 ```
 
-## Getting Started
+### Step 2: Create the `movie_index` in Redis
 
-### Step 1: Choose your setup option
+Run the command below once:
 
-Pick one of the setup options from the Prerequisites section:
-- GitHub Codespaces
-- Local development
+```bash
+redis-cli FT.CREATE movie_index ON JSON PREFIX 1 "movie:" SCHEMA \
+  $.title AS title TEXT WEIGHT 1.0 \
+  $.year AS year NUMERIC SORTABLE \
+  $.plot AS plot TEXT WEIGHT 1.0 \
+  $.releaseDate AS releaseDate TAG \
+  $.rating AS rating NUMERIC SORTABLE \
+  $.actors[*] AS actors TAG \
+  $.plotEmbedding AS plotEmbedding VECTOR FLAT 6 TYPE FLOAT32 DIM 384 DISTANCE_METRIC COSINE
+```
 
-### Step 2: Start your workspace
+### Step 3: Start the Backend
 
-If you are using **GitHub Codespaces**:
-- Create a new codespace for this repository.
-- Forward ports `8080`, `8081`, `6379`, and `5540`.
+```bash
+./mvnw spring-boot:run
+```
 
-If you are using **Local development**:
-- Clone the repository:
+### Step 4: Open the UI
 
-  ```bash
-  git clone https://github.com/redis-developer/building-hybrid-search-apps-with-redis.git
-  ```
+Use:
 
-- Verify tools:
-
-  ```bash
-  java -version
-  mvn -version
-  docker --version
-  git --version
-  riot --version
-  ```
-
-- Start infrastructure services:
-
-  ```bash
-  docker compose up -d redis-database redis-insight rhs-frontend
-  ```
-
-- Run backend:
-
-  ```bash
-  ./mvnw spring-boot:run
-  ```
-
-Access points:
 - App UI: http://localhost:8080/redis-movies-searcher
-- Backend API: http://localhost:8081/search?query=star
+- API: http://localhost:8081/search?query=star
 - Redis Insight: http://localhost:5540
 
-### Step 3: Begin your first lab
+## 🧪 Testing Your Setup
 
-Switch to the starter branch for Lab 1:
+### API Reachability Test
 
 ```bash
-git checkout lab-1-starter
+curl "http://localhost:8081/search?query=star"
 ```
 
-Then follow the lab README instructions.
+You should get a JSON response with `resultType` and `matchedMovies`.
 
-## Resources
-- [Redis Query Engine](https://redis.io/docs/latest/develop/interact/search-and-query/)
-- [Redis Vector Search](https://redis.io/docs/latest/develop/ai/search-and-query/vectors/)
-- [Redis OM Spring](https://github.com/redis/redis-om-spring)
-- [RIOT Documentation](https://redis.io/docs/latest/develop/tools/riot/)
-- [Redis Insight](https://redis.io/insight/)
+### UI Verification
 
-## Contributing
-Contributions are welcome. Please open an issue to discuss major changes before submitting a PR.
+1. Open `http://localhost:8080/redis-movies-searcher`
+2. Type any search query
+3. Confirm the UI makes requests and renders response rows (empty or populated)
 
-## Maintainers
-- Ricardo Ferreira — [@riferrei](https://github.com/riferrei)
+### Redis Verification
 
-## License
-This project is licensed under the [MIT License](./LICENSE).
+```bash
+redis-cli FT.INFO movie_index
+```
+
+Confirm the index exists and fields are registered.
+
+## 🎨 Understanding the Code
+
+### 1. `SearchController`
+- Exposes `GET /search`
+- Delegates query handling to the search service
+
+### 2. `SearchService`
+- Uses `manualHybridSearch(...)` in this phase
+- Contains FTS + fallback VSS orchestration logic
+
+### 3. `Movie` and `ResultType`
+- `Movie` defines the document model and vector-enabled fields
+- `ResultType` communicates which strategy produced results
+
+## 🔍 What's Still Missing?
+
+At this stage, the app is operational, but:
+- ❌ No movie dataset is loaded
+- ❌ No embeddings are generated for existing movie records
+- ❌ Native Redis hybrid search path is not active yet
+- ❌ Prompt embedding cache-aside is not implemented yet
+
+## 🐛 Troubleshooting
+
+<details>
+<summary>"Connection refused" on port 8081</summary>
+
+Ensure `./mvnw spring-boot:run` is running and completed startup.
+</details>
+
+<details>
+<summary>UI loads but searches fail</summary>
+
+Verify backend is available at `http://localhost:8081/search` and CORS allows your UI origin.
+</details>
+
+<details>
+<summary>Index creation fails</summary>
+
+If index already exists, run:
+
+```bash
+redis-cli FT.DROPINDEX movie_index
+```
+
+Then execute the `FT.CREATE` command again.
+</details>
+
+## 🎉 Lab Completion
+
+Congratulations. You now have:
+- ✅ Running UI, API, Redis, and Redis Insight
+- ✅ A valid Redis index for movie search
+- ✅ A baseline application ready for data ingestion
+
+## ➡️ Next Steps
+
+Proceed to [Lab 2: Importing Data into Redis](../../tree/lab-2-starter/README.md)
+
+- Switch to the next branch:
+
+```bash
+git checkout lab-2-starter
+```
