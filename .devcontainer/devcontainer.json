@@ -9,6 +9,7 @@
   "updateRemoteUserUID": true,
   "runServices": [
     "workspace",
+    "rhs-frontend",
     "redis-database",
     "redis-insight"
   ],
