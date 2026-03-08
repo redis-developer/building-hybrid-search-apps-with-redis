@@ -47,19 +47,21 @@ Before starting, confirm the checklist for the setup option you selected:
 > 💡 For GitHub Codespaces and Dev Containers, use forwarded URLs from the Ports panel for browser access.  
 > From workspace terminals, prefer service DNS names (for example, `redis-database`) when connecting to Redis.
 
-### Step 1: Inspect the data import layer
-Open `data/import-movies.sh` and review how RIOT will map source fields into Redis JSON documents.
+### Step 1: Inspect `movies.json`
+Open `data/movies.json` and review the shape of incoming data.
 
-In this branch, the script still contains a TODO placeholder.
+Pay attention to nested fields under `info`, for example:
+- `info.plot`
+- `info.release_date`
+- `info.rating`
+- `info.actors`
 
-### Step 2: Inspect the backend search layer
-Review how imported data is consumed by the API:
-- `src/main/java/io/redis/movies/searcher/core/domain/Movie.java`
-- `src/main/java/io/redis/movies/searcher/core/controller/SearchController.java`
-- `src/main/java/io/redis/movies/searcher/core/service/SearchService.java`
+This is important because the import command maps nested fields into the target Redis JSON structure.
 
-### Step 3: Implement the RIOT import command
-Replace the TODO with:
+### Step 2: Implement the import script with RIOT
+Open `data/import-movies.sh`.
+
+In this branch, the script still contains a TODO placeholder. Replace it with:
 ```bash
 riot file-import \
     --var counter="new java.lang.Integer(1)" \
@@ -71,7 +73,15 @@ riot file-import \
     movies.json json.set --keyspace movie --key id
 ```
 
-### Step 4: Run the import
+What this command does:
+- `file-import`: reads records from `movies.json`
+- `--var counter` + `--proc id`: creates incremental IDs for keys
+- `--proc plot/releaseDate/rating/actors`: extracts and maps nested `info.*` fields
+- `json.set --keyspace movie --key id`: stores each record as Redis JSON under `movie:<id>`
+
+During storage, each movie becomes a JSON document in Redis, ready for indexing/search using the structure expected by the app.
+
+### Step 3: Run the import
 If you are using **Local development**, run:
 
 ```bash
@@ -83,20 +93,12 @@ cd ..
 
 If you are using **GitHub Codespaces** or **Dev Containers**, run the same command from the workspace terminal.
 
-> 💡 From this point on, every time you change backend code, rebuild and run the backend again before validating behavior.
-
 ## 🧪 Testing Your Import
 ### API verification (FTS)
 ```bash
 curl "http://localhost:8081/search?query=Tom%20Hanks"
 ```
 You should get movie matches from imported data.
-
-### UI verification
-1. Open `http://localhost:8080/redis-movies-searcher` (or forwarded URL)
-2. Search for a few known terms (for example, `star`, `Tom Hanks`)
-3. Confirm there are no UI errors
-4. Check backend logs and confirm responses are being returned
 
 ### Redis Insight verification
 1. Open Redis Insight (`http://localhost:5540` or forwarded URL)
