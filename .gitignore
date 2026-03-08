@@ -27,3 +27,6 @@ replay_pid*
 .idea
 target
 .java-version
+
+# Redis
+data/dump.rdb
