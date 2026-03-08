@@ -2,7 +2,7 @@
 
 ## 🎯 Learning Objectives
 By the end of this lab, you will:
-- Run the full workshop stack locally (frontend, backend, Redis, Redis Insight)
+- Run the full workshop stack in your selected environment (Codespaces, Dev Containers, or Local development)
 - Understand the baseline search architecture used across the workshop
 - Create the RediSearch index manually for the first run
 - Validate the API and UI are operational before loading data
@@ -101,7 +101,11 @@ redis-cli FT.CREATE movie_index ON JSON PREFIX 1 "movie:" SCHEMA \
 - API: `http://localhost:8081/search?query=star`
 - Redis Insight: `http://localhost:5540`
 
+If you are using **GitHub Codespaces** or **Dev Containers**, use the forwarded URLs from the Ports panel.
+
 ## 🧪 Testing Your Setup
+> 💡 In GitHub Codespaces or Dev Containers, use `redis-cli -h redis-database ...` from the workspace terminal.
+
 ### API reachability test
 ```bash
 curl "http://localhost:8081/search?query=star"
@@ -115,9 +119,15 @@ You should get a JSON payload with `resultType` and `matchedMovies`.
 
 ### Redis verification
 ```bash
-redis-cli FT.INFO movie_index
+redis-cli -h redis-database FT.INFO movie_index
 ```
 Confirm the index exists and fields are registered.
+
+If you are using **Local development**, this also works:
+
+```bash
+redis-cli FT.INFO movie_index
+```
 
 ## 🎨 Understanding the Code
 ### 1. `SearchController`
@@ -157,9 +167,15 @@ Verify backend is reachable at `http://localhost:8081/search` and CORS is config
 
 If index already exists:
 ```bash
-redis-cli FT.DROPINDEX movie_index
+redis-cli -h redis-database FT.DROPINDEX movie_index
 ```
 Then run `FT.CREATE` again.
+
+If you are using **Local development**, this also works:
+
+```bash
+redis-cli FT.DROPINDEX movie_index
+```
 </details>
 
 ## 🎉 Lab Completion
