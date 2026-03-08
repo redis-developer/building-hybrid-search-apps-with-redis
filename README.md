@@ -62,10 +62,12 @@ This is important because the import command maps nested fields into the target 
 Open `data/import-movies.sh`.
 
 In this branch, the script still contains a TODO placeholder. Replace it with:
+
+Before running the command, set `REDIS_URI` to match your environment:
+- Local development: use `redis://localhost:6379`
+- GitHub Codespaces / Dev Containers: use `redis://redis-database:6379`
+
 ```bash
-# Default assumes local Redis.
-# For GitHub Codespaces / Dev Containers, set:
-#   export REDIS_URI="redis://redis-database:6379"
 REDIS_URI="${REDIS_URI:-redis://localhost:6379}"
 
 riot file-import \
