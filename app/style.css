@@ -1,0 +1,43 @@
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap");
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Open Sans", sans-serif;
+}
+
+body {
+    display: flex;
+    padding: 0 10px;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: #ffffff;
+}
+
+#results-table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+#results-table tbody tr:nth-child(even) {
+    background-color: #ffffff;
+}
+
+.redis-logo img {
+    width: 250px;
+    height: auto;
+}
+
+#search-box {
+    width: 27%;
+    max-width: 1200px;
+    padding: 10px;
+    font-size: 16px;
+    height: 48px;
+    border-radius: 15px;
+    border: 1px solid #ccc;
+    text-indent: 2em;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black"><text y="20" font-size="20">🔍</text></svg>') no-repeat 10px center;
+    background-size: 20px 20px;
+    font-family: "Open Sans", sans-serif;
+}
