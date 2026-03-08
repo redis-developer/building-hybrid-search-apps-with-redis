@@ -8,7 +8,7 @@ By the end of this lab, you will:
 - Validate imported records and index readiness in Redis Insight
 - Run initial FTS searches against real data
 
-#### 🕗 Estimated Time: 15 minutes
+#### 🕗 Estimated Time: 10 minutes
 
 ## 🏗️ What You're Building
 In this lab, you'll make the data ingestion pipeline operational.
