@@ -1,7 +1,6 @@
 # Lab 5: Caching Prompt Embedding
 
 ## 🎯 Learning Objectives
-
 By the end of this lab, you will:
 - Implement a cache-aside strategy for prompt embeddings
 - Use a `Keyword` document model to persist query embeddings
@@ -11,7 +10,6 @@ By the end of this lab, you will:
 #### 🕗 Estimated Time: 15 minutes
 
 ## 🏗️ What You're Building
-
 In this final lab, you'll add prompt-embedding reuse so repeated queries become faster and cheaper.
 
 This includes:
@@ -20,33 +18,26 @@ This includes:
 - **Native hybrid path update** to use keyword-backed embedding lookup
 
 ### Architecture Overview
-
 ![search.png](images/search.png)
 
 ## 📋 Prerequisites Check
-
 Before starting, ensure you have:
-
 - [ ] Completed Lab 4 successfully
 - [ ] Native hybrid search path working
 - [ ] Backend and Redis running with imported movie data
 
 ## 🚀 Setup Instructions
-
-### Step 1: Review New Domain Components
-
+### Step 1: Review new domain components
 This branch already includes:
 - `Keyword` domain class
 - `KeywordRepository`
 
-They are introduced to support embedding cache-aside.
+These support embedding cache-aside behavior.
 
-### Step 2: Implement Keyword-based Embedding Lookup
-
+### Step 2: Implement keyword-based embedding lookup
 Open `src/main/java/io/redis/movies/searcher/core/service/SearchService.java`.
 
 In this branch, implement:
-
 ```java
 private float[] getQueryAsVectorUsingKeyword(String query)
 ```
@@ -54,72 +45,59 @@ private float[] getQueryAsVectorUsingKeyword(String query)
 Expected behavior:
 - Search for an existing keyword containing the query
 - If present, return stored embedding
-- If absent, persist a new `Keyword(query)` and return generated embedding
+- If absent, persist `new Keyword(query)` and return generated embedding
 
-### Step 3: Switch Native Path to Use Cache-aside Method
-
-Still in `SearchService`, update native search flow from:
-
+### Step 3: Switch native path to use cache-aside
+Still in `SearchService`, update from:
 ```java
 float[] queryAsVector = getQueryAsVector(query);
 ```
-
-to:
-
+To:
 ```java
 float[] queryAsVector = getQueryAsVectorUsingKeyword(query);
 ```
 
-### Step 4: Build and Run
-
+### Step 4: Build and run
 ```bash
 ./mvnw clean package
 ./mvnw spring-boot:run
 ```
 
 ## 🧪 Testing Your Implementation
-
-### Repeated Query Test
-
-Run the same semantic query multiple times:
-
+### Repeated query test
+Run the same query multiple times:
 ```bash
 curl "http://localhost:8081/search?query=dude%20who%20teaches%20rock"
 curl "http://localhost:8081/search?query=dude%20who%20teaches%20rock"
 ```
+The second run should avoid recomputing the embedding.
 
-The second run should avoid recomputing embedding via cache-aside behavior.
-
-### Verify Cached Keywords
-
-Inspect Redis for keyword entries (via Redis Insight or CLI scan).
+### Verify cached keywords
+Inspect Redis for keyword documents.
 
 In Redis Insight:
 1. Open `http://localhost:5540`
-2. Browse keys for keyword documents
-3. Confirm embeddings are stored alongside query text
+2. Browse keys for keyword records
+3. Confirm embeddings are stored with query text
 
-### API Behavior Check
-
+### API behavior check
 Response should still return hybrid results while using cached prompt vectors.
 
 ## 🎨 Understanding the Code
+### 1. Cache-aside pattern
+- Read cache first
+- On miss, compute and write back
+- Return generated value
 
-### 1. Cache-aside Pattern
-- Read-through from cache first
-- On miss, compute + write-back
-- Return newly computed value
-
-### 2. `Keyword` Model
-- Stores prompt text and corresponding embedding
+### 2. `Keyword` model
+- Stores prompt text and associated embedding
 - Enables reuse for recurring prompts
 
 ### 3. Why this matters
 - Reduces embedding calls for repeated searches
-- Lowers latency and external model dependency pressure
+- Improves latency and lowers external dependency pressure
 
 ## 🐛 Troubleshooting
-
 <details>
 <summary>Keyword entries are never created</summary>
 
@@ -129,32 +107,28 @@ Confirm `getQueryAsVectorUsingKeyword(...)` is invoked from `nativeHybridSearch(
 <details>
 <summary>Hybrid results changed unexpectedly</summary>
 
-Check that cached embeddings are generated from the same embedder and dimensions as movie plot embeddings.
+Verify cached vectors use the same embedding model and dimensions as movie vectors.
 </details>
 
 <details>
 <summary>Repository wiring errors</summary>
 
-Verify `KeywordRepository` is in a package scanned by Spring and `@EnableRedisDocumentRepositories` is active.
+Ensure `KeywordRepository` is under scanned packages and `@EnableRedisDocumentRepositories` is active.
 </details>
 
 ## 🎉 Lab Completion
-
 Congratulations. You now have:
 - ✅ Native hybrid search with prompt-embedding cache-aside
 - ✅ Reusable keyword embedding store in Redis
 - ✅ The complete workshop implementation
 
 ## 🏁 Next Steps
-
-You can now switch to the full reference branch:
-
+You can switch to the full reference branch:
 ```bash
 git checkout workshop-complete
 ```
 
 Or return to the workshop index:
-
 ```bash
 git checkout main
 ```
