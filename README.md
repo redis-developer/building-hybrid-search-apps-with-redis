@@ -7,7 +7,7 @@ By the end of this lab, you will:
 - Reduce repeated embedding generation for recurring prompts
 - Route native hybrid embedding creation through a keyword lookup flow
 
-#### 🕗 Estimated Time: 15 minutes
+#### 🕗 Estimated Time: 10 minutes
 
 ## 🏗️ What You're Building
 In this final lab, you'll add prompt-embedding reuse so repeated queries become faster and cheaper.
