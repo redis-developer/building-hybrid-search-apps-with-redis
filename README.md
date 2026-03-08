@@ -109,7 +109,7 @@ You should get movie matches based on title terms from imported data.
 3. Browse `movie:*` and confirm there are many imported records
 4. Open one sample document and validate fields (`title`, `plot`, `actors`, `rating`)
 5. Verify `movie_index` exists in indexes view
-6. Run: `FT.SEARCH movie_index "@title:star" LIMIT 0 5` from Redis Insight and confirm results
+6. Run: `FT.SEARCH movie_index "@title:star" LIMIT 0 5` using the Workbench tab on Redis Insight
 
 ## 🎨 Understanding the Code
 ### 1. `import-movies.sh`
