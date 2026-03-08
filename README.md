@@ -22,13 +22,31 @@ This includes:
 ![search.png](images/search.png)
 
 ## 📋 Prerequisites Check
-Before starting, ensure you have:
-- [ ] Completed Lab 1 successfully
+Before starting, confirm the checklist for the setup option you selected:
+
+### Option 1: GitHub Codespaces
+- [ ] Codespace is running for this repository
+- [ ] Ports `8080`, `8081`, `5540`, and `6379` are forwarded
+- [ ] Lab 1 completed in this Codespace environment
+
+### Option 2: Dev Containers locally
+- [ ] Project opened in your IDE Dev Container
+- [ ] Containers are healthy and ports are available/forwarded
+- [ ] Lab 1 completed in this Dev Container environment
+
+### Option 3: Local development
+- [ ] Local Docker environment is running
+- [ ] Lab 1 completed locally
+- [ ] Redis, frontend, and backend services are up
+
+### Lab-specific requirements
 - [ ] `movie_index` already created in Redis
-- [ ] Redis and backend running
-- [ ] RIOT available in your shell
+- [ ] RIOT available in your shell (`riot --version`)
 
 ## 🚀 Setup Instructions
+> 💡 For GitHub Codespaces and Dev Containers, use forwarded URLs from the Ports panel for browser access.  
+> From workspace terminals, prefer service DNS names (for example, `redis-database`) when connecting to Redis.
+
 ### Step 1: Open the import script
 File: `data/import-movies.sh`
 
@@ -48,12 +66,16 @@ riot file-import \
 ```
 
 ### Step 3: Run the import
+If you are using **Local development**, run:
+
 ```bash
 cd data
 chmod +x import-movies.sh
 ./import-movies.sh
 cd ..
 ```
+
+If you are using **GitHub Codespaces** or **Dev Containers**, run the same command from the workspace terminal.
 
 ## 🧪 Testing Your Import
 ### Validate key count
