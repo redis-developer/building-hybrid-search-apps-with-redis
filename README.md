@@ -74,12 +74,7 @@ If you are running from **Local development**, run:
 docker compose up -d redis-database redis-insight rhs-frontend
 ```
 
-If you are using **GitHub Codespaces** or **Dev Containers**, services should start with the environment.  
-If needed, start them manually with:
-
-```bash
-docker compose -f .devcontainer/docker-compose.yml up -d rhs-frontend redis-database redis-insight
-```
+If you are using **GitHub Codespaces** or **Dev Containers**, these services are started automatically with the environment.
 
 ### Step 4: Build and start the backend
 
