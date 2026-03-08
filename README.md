@@ -39,7 +39,7 @@ Your application now implements an end-to-end search experience.
 - **Implementation**: `SearchService.nativeHybridSearch(...)`
 - **Benefits**:
   - Better relevance by combining keyword and semantic signals
-  - Less app-side orchestration complexity an reranking code
+  - Less app-side orchestration complexity and reranking code
   - Cleaner and faster retrieval pipeline
 
 ### 5. **Prompt Embedding Cache-Aside** (Lab 5)
