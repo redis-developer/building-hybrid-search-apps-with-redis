@@ -83,20 +83,6 @@ If you are using **GitHub Codespaces** or **Dev Containers**, these services are
 ./mvnw spring-boot:run
 ```
 
-### Step 5: Test the API
-Run a simple query:
-
-```bash
-curl "http://localhost:8081/search?query=star"
-```
-
-At this stage, data has not been imported yet, so you should not expect real movie matches.
-
-### Step 6: Inspect Redis behavior in Redis Insight
-Use Redis Insight to validate what happened in Redis:
-- Confirm there are no `movie:*` records yet
-- Confirm the search index exists (`movie_index`)
-
 ## 🧪 Testing Your Setup
 > 💡 In GitHub Codespaces or Dev Containers, use `redis-cli -h redis-database ...` from the workspace terminal.
 
@@ -109,17 +95,26 @@ You should get a JSON payload with `resultType` and `matchedMovies`.
 ### UI verification
 1. Open `http://localhost:8080/redis-movies-searcher`
 2. Type any query
-3. Confirm requests are sent and rows are rendered (empty or populated)
+3. Confirm there are no UI errors
+4. Check backend logs and confirm requests are being processed without failures
 
 ### Redis verification
+Confirm there are still no movie records:
+
+```bash
+redis-cli -h redis-database --scan --pattern "movie:*" | wc -l
+```
+
+Confirm the index exists and fields are registered:
+
 ```bash
 redis-cli -h redis-database FT.INFO movie_index
 ```
-Confirm the index exists and fields are registered.
 
 If you are using **Local development**, this also works:
 
 ```bash
+redis-cli --scan --pattern "movie:*" | wc -l
 redis-cli FT.INFO movie_index
 ```
 
