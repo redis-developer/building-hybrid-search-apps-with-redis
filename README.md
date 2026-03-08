@@ -18,9 +18,6 @@ This includes:
 - **JSON Mapping Rules**: transform source payload into the `Movie` model shape
 - **Searchable Dataset**: records queryable via API and Redis Insight
 
-### Architecture Overview
-![search.png](images/search.png)
-
 ## 📋 Prerequisites Check
 Before starting, confirm the checklist for the setup option you selected:
 
