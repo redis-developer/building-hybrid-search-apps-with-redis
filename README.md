@@ -191,11 +191,16 @@ What this code does:
 - Logs progress and total execution time, and exits quickly when no backfill is needed.
 
 ### Step 3: Rebuild and run
-If you are using **Local development**, run:
+If you are using **Local development**, run these commands separately:
 
 ```bash
-./mvnw clean package
-./mvnw spring-boot:run
+mvn clean package
+```
+
+Then run:
+
+```bash
+mvn spring-boot:run
 ```
 
 If you are using **GitHub Codespaces** or **Dev Containers**, run the same command from the workspace terminal.
