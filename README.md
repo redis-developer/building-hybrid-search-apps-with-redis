@@ -51,27 +51,93 @@ Open `src/main/java/io/redis/movies/searcher/core/service/SearchService.java`.
 
 In this branch, `nativeHybridSearch(...)` returns `null`.
 
-Implement it to:
-- Build query embedding
-- Execute Redis OM `hybridSearch(...)` with:
-  - text query
-  - `Movie$.TITLE` text field
-  - query vector
-  - `Movie$.PLOT_EMBEDDING` vector field
-  - alpha weighting (for example `0.7f`)
-- Return `ResultType.HYBRID`
+Replace this:
+```java
+public Pair<List<MovieDTO>, ResultType> nativeHybridSearch(String query, Integer limit) {
+    // Implement this method to leverage native hybrid search
+    return null;
+}
+```
+
+With this:
+```java
+public Pair<List<MovieDTO>, ResultType> nativeHybridSearch(String query, Integer limit) {
+    logger.info("Received query: {}", query);
+    logger.info("-------------------------");
+    final int resultLimit = (limit == null) ? DEFAULT_RESULT_LIMIT : limit;
+
+    // Create the embedding for the query
+    var embeddingStartTime = System.currentTimeMillis();
+    float[] queryAsVector = getQueryAsVector(query);
+    var embeddingEndTime = System.currentTimeMillis();
+    logger.info("Embedding took {} ms", embeddingEndTime - embeddingStartTime);
+
+    var hybridSearchStartTime = System.currentTimeMillis();
+    List<Movie> movies = entityStream.of(Movie.class)
+            .hybridSearch(
+                    query,                    // text query
+                    Movie$.TITLE,             // text field to search
+                    queryAsVector,            // query embedding as float[]
+                    Movie$.PLOT_EMBEDDING,    // vector field to search
+                    0.7f                      // alpha: 70% vector, 30% text
+            )
+            .limit(resultLimit)
+            .collect(Collectors.toList());
+
+    ResultType resultType = ResultType.HYBRID;
+    var hybridSearchEndTime = System.currentTimeMillis();
+
+    logger.info("Hybrid search took {} ms", hybridSearchEndTime - hybridSearchStartTime);
+    logger.info("Found {} movies", movies.size());
+
+    return Pair.of(convertToDTOs(movies), resultType);
+}
+```
+
+What this code does:
+- Creates a query embedding once with `getQueryAsVector(query)`.
+- Runs native Redis hybrid search with both text (`Movie$.TITLE`) and vector (`Movie$.PLOT_EMBEDDING`) signals.
+- Uses `alpha = 0.7f` to weight semantic relevance more than lexical relevance.
+- Returns `ResultType.HYBRID` and keeps the same DTO mapping pipeline.
 
 ### Step 2: Switch controller to native hybrid
 Open `src/main/java/io/redis/movies/searcher/core/controller/SearchController.java`.
 
-Change from:
+Replace this:
 ```java
-searchService.manualHybridSearch(query, limit)
+@GetMapping("/search")
+public Map<String, Object> search(
+        @RequestParam(required = true) String query,
+        @RequestParam(required = false) Integer limit
+) {
+    // Make sure to change the method call here from the current
+    // manualHybridSearch() to use nativeHybridSearch() instead
+    var matchedMovies = searchService.manualHybridSearch(query, limit);
+    return Map.of(
+            "resultType", matchedMovies.getSecond().name(),
+            "matchedMovies", matchedMovies.getFirst()
+    );
+}
 ```
-To:
+
+With this:
 ```java
-searchService.nativeHybridSearch(query, limit)
+@GetMapping("/search")
+public Map<String, Object> search(
+        @RequestParam(required = true) String query,
+        @RequestParam(required = false) Integer limit
+) {
+    var matchedMovies = searchService.nativeHybridSearch(query, limit);
+    return Map.of(
+            "resultType", matchedMovies.getSecond().name(),
+            "matchedMovies", matchedMovies.getFirst()
+    );
+}
 ```
+
+What this code does:
+- Switches the `/search` endpoint from manual merge logic to native hybrid logic.
+- Preserves the response contract, so the frontend continues to work without changes.
 
 ### Step 3: Build and run
 If you are using **Local development**, run:
@@ -84,21 +150,38 @@ If you are using **Local development**, run:
 If you are using **GitHub Codespaces** or **Dev Containers**, run the same command from the workspace terminal.
 
 ## 🧪 Testing Your Implementation
-### API test
+### 1. Keep backend running
+Use the backend process started in Step 3 of Setup Instructions.
+
+### 2. API tests
+Run a lexical-heavy query:
 ```bash
-curl "http://localhost:8081/search?query=space%20ship"
+curl "http://localhost:8081/search?query=star&limit=5"
 ```
-Response should include:
+
+Run a semantic-style query:
+```bash
+curl "http://localhost:8081/search?query=dude%20who%20teaches%20rock&limit=5"
+```
+
+Both responses should include:
 - `resultType: "HYBRID"`
-- `matchedMovies` list
+- a non-empty `matchedMovies` list
 
-### UI validation
+### 3. Check backend logs
+For each request, validate logs include:
+- `Embedding took ... ms`
+- `Hybrid search took ... ms`
+- `Found ... movies`
+
+### 4. UI validation
 1. Open `http://localhost:8080/redis-movies-searcher`
-2. Try lexical and semantic queries
-3. Observe consistency and response timing label
+2. Search for `star`
+3. Search for `dude who teaches rock`
+4. Confirm no browser errors and consistent results
 
-### Compare with manual behavior
-Optionally switch back to manual temporarily and compare output/latency.
+### 5. Optional comparison
+Temporarily switch `SearchController` back to `manualHybridSearch(...)` to compare latency/relevance, then restore `nativeHybridSearch(...)`.
 
 ## 🎨 Understanding the Code
 ### 1. Native hybrid search
