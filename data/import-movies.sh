@@ -1,6 +1,8 @@
 #!/bin/bash
 
-REDIS_URI="${REDIS_URI:-redis://redis-database:6379}"
+# Default assumes local Redis. For Codespaces/Dev Containers, set:
+#   export REDIS_URI="redis://redis-database:6379"
+REDIS_URI="${REDIS_URI:-redis://localhost:6379}"
 
 riot file-import \
     --uri "$REDIS_URI" \
