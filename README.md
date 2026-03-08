@@ -85,6 +85,9 @@ What this code does:
 - On cache hit, returns the stored `embedding`. The returned value is reused.
 - On cache miss, saves `new Keyword(query)` and returns the newly generated embedding.
 
+> 💡 Workshop note: this implementation uses `Keyword$.VALUE.containing(query)` for simplicity.  
+> In production, prefer an exact normalized cache key (for example, lowercase + trimmed input) to avoid partial-match collisions.
+
 ### Step 3: Route native hybrid to the cache-aside method
 Still in `SearchService`, update `nativeHybridSearch(...)`.
 
