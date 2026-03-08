@@ -41,8 +41,8 @@ Before starting, confirm the checklist for the setup option you selected:
 - [ ] `movie_index` already created
 
 ## 🚀 Setup Instructions
-> 💡 For GitHub Codespaces and Dev Containers, use forwarded URLs from the Ports panel for browser access.  
-> From workspace terminals, prefer service DNS names (for example, `redis-database`) when connecting to Redis.
+> 💡 If you are using either GitHub Codespaces or Dev Containers, you must use the forwarded URL from the Ports panel for proper access. Also, you may use the sidecar service DNS names from the workspace terminal when needed, such as using `redis-database` to access Redis.
+> ![port-mappings.png](images/port-mappings.png)
 
 ### Step 1: Implement startup hook
 Open `src/main/java/io/redis/movies/searcher/RedisMoviesSearcher.java`.
