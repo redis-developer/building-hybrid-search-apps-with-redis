@@ -5,7 +5,6 @@ import com.redis.om.spring.search.stream.EntityStream;
 import io.redis.movies.searcher.core.domain.*;
 import io.redis.movies.searcher.core.dto.MovieDTO;
 import com.redis.om.spring.vectorize.Embedder;
-import io.redis.movies.searcher.core.repository.KeywordRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -22,12 +21,10 @@ public class SearchService {
 
     private final EntityStream entityStream;
     private final Embedder embedder;
-    private final KeywordRepository keywordRepository;
 
-    public SearchService(EntityStream entityStream, Embedder embedder, KeywordRepository keywordRepository) {
+    public SearchService(EntityStream entityStream, Embedder embedder) {
         this.entityStream = entityStream;
         this.embedder = embedder;
-        this.keywordRepository = keywordRepository;
     }
 
     public Pair<List<MovieDTO>, ResultType> manualHybridSearch(String query, Integer limit) {
@@ -84,38 +81,6 @@ public class SearchService {
         return Pair.of(convertToDTOs(uniqueMovies), ftsMovies.isEmpty() ? ResultType.VSS : ResultType.HYBRID);
     }
 
-    public Pair<List<MovieDTO>, ResultType> nativeHybridSearch(String query, Integer limit) {
-        logger.info("Received query: {}", query);
-        logger.info("-------------------------");
-        final int resultLimit = (limit == null) ? DEFAULT_RESULT_LIMIT : limit;
-
-        // Create the embedding for the query
-        var embeddingStartTime = System.currentTimeMillis();
-        float[] queryAsVector = getQueryAsVectorUsingKeyword(query);
-        var embeddingEndTime = System.currentTimeMillis();
-        logger.info("Embedding took {} ms", embeddingEndTime - embeddingStartTime);
-
-        var hybridSearchStartTime = System.currentTimeMillis();
-        List<Movie> movies = entityStream.of(Movie.class)
-                .hybridSearch(
-                        query,                    // text query
-                        Movie$.TITLE,             // text field to search
-                        queryAsVector,            // query embedding as float[]
-                        Movie$.PLOT_EMBEDDING,    // vector field to search
-                        0.7f                      // alpha: 70% vector, 30% text
-                )
-                .limit(resultLimit)
-                .collect(Collectors.toList());
-
-        ResultType resultType = ResultType.HYBRID;
-        var hybridSearchEndTime = System.currentTimeMillis();
-
-        logger.info("Hybrid search took {} ms", hybridSearchEndTime - hybridSearchStartTime);
-        logger.info("Found {} movies", movies.size());
-
-        return Pair.of(convertToDTOs(movies), resultType);
-    }
-
     private float[] getQueryAsVector(String query) {
         if (!embedder.isReady()) {
             throw new IllegalStateException("Embedder is not ready.");
@@ -139,14 +104,6 @@ public class SearchService {
         }
 
         return buffer.array();
-    }
-
-    private float[] getQueryAsVectorUsingKeyword(String query) {
-        return entityStream.of(Keyword.class)
-                .filter(Keyword$.VALUE.containing(query))
-                .findFirst()
-                .map(Keyword::getEmbedding)
-                .orElseGet(() -> keywordRepository.save(new Keyword(query)).getEmbedding());
     }
 
     private List<MovieDTO> convertToDTOs(List<Movie> movies) {
