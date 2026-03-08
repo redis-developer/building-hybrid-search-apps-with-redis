@@ -84,8 +84,6 @@ If you are using **GitHub Codespaces** or **Dev Containers**, these services are
 ```
 
 ## 🧪 Testing Your Setup
-> 💡 In GitHub Codespaces or Dev Containers, use `redis-cli -h redis-database ...` from the workspace terminal.
-
 ### API reachability test
 ```bash
 curl "http://localhost:8081/search?query=star"
@@ -99,24 +97,11 @@ You should get a JSON payload with `resultType` and `matchedMovies`.
 4. Check backend logs and confirm requests are being processed without failures
 
 ### Redis verification
-Confirm there are still no movie records:
-
-```bash
-redis-cli -h redis-database --scan --pattern "movie:*" | wc -l
-```
-
-Confirm the index exists and fields are registered:
-
-```bash
-redis-cli -h redis-database FT.INFO movie_index
-```
-
-If you are using **Local development**, this also works:
-
-```bash
-redis-cli --scan --pattern "movie:*" | wc -l
-redis-cli FT.INFO movie_index
-```
+Use Redis Insight to inspect what happened at Redis level:
+1. Open Redis Insight (`http://localhost:5540` or forwarded URL)
+2. Connect to Redis (`redis-database:6379` in Codespaces/Dev Containers, or `localhost:6379` locally)
+3. Search for keys with pattern `movie:*` and confirm there are no records yet
+4. Open the indexes view (or run commands panel) and confirm `movie_index` exists
 
 ## 🎨 Understanding the Code
 ### 1. `SearchController`
