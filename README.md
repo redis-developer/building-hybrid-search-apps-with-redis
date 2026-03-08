@@ -1,4 +1,4 @@
-# Building Hybrid Search Apps with Redis (Java Workshop)
+# Building Hybrid Search Apps with Redis
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Java 21+](https://img.shields.io/badge/Java-21%2B-blue.svg)](https://www.oracle.com/java/technologies/downloads)
