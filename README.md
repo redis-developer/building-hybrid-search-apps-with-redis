@@ -2,21 +2,21 @@
 
 ## 🎯 Learning Objectives
 By the end of this lab, you will:
-- Implement startup embedding regeneration for existing movie records
-- Use Redis scanning and batched persistence to backfill vectors
-- Wire startup execution with `CommandLineRunner`
-- Validate that `plotEmbedding` is generated for previously imported data
-- Improve semantic retrieval behavior for manual hybrid search
+- Implement the new startup `loadData()` hook in `RedisMoviesSearcher`
+- Understand the role of `MovieService` and `MovieRepository` for embedding backfill
+- Implement `regenerateMissingEmbeddings()` using Redis SCAN + batched persistence
+- Understand why first startup can be slower, and why later startups are faster
+- Enable vector search behavior by ensuring movies have `plotEmbedding`
 
 #### 🕗 Estimated Time: 25 minutes
 
 ## 🏗️ What You're Building
-In this lab, you'll implement the embedding backfill pipeline that prepares existing movies for vector search.
+In this lab, you'll add a startup pipeline that backfills embeddings for previously imported movies.
 
 This includes:
-- **`MovieRepository` usage** for batch read/write
+- **`loadData()` in `RedisMoviesSearcher`** to trigger regeneration on startup
 - **`MovieService.regenerateMissingEmbeddings()`** implementation
-- **Startup hook** in `RedisMoviesSearcher` to trigger regeneration
+- **`MovieRepository` usage** (`findAllById`, `saveAll`) to process movie batches
 
 ### Architecture Overview
 ![search.png](images/search.png)
@@ -50,25 +50,144 @@ Before starting, confirm the checklist for the setup option you selected:
 ### Step 1: Implement startup hook
 Open `src/main/java/io/redis/movies/searcher/RedisMoviesSearcher.java`.
 
-In this branch, `loadData(...)` returns `null`. Replace it with a `CommandLineRunner` that calls:
+In this branch, `loadData(...)` returns `null`.
+
+Replace this:
 ```java
-movieService.regenerateMissingEmbeddings();
+@Bean
+CommandLineRunner loadData(MovieService movieService) {
+    // Make sure to implement the call to regenerate
+    // the embeddings during the application startup
+    return null;
+}
+```
+
+With this:
+```java
+@Bean
+CommandLineRunner loadData(MovieService movieService) {
+    return args -> {
+        movieService.regenerateMissingEmbeddings();
+    };
+}
 ```
 
 ### Step 2: Implement embedding regeneration
 Open `src/main/java/io/redis/movies/searcher/core/service/MovieService.java`.
 
-In this branch, `regenerateMissingEmbeddings()` is TODO.
+You will see a new service class in this lab: `MovieService`.
 
-Implement logic to:
-- Scan `movie:*` keys from Redis
-- Resolve integer IDs
-- Load documents in batches
-- Keep only movies that:
-  - have non-blank `plot`
-  - have missing `plotEmbedding`
-- Save batches via `movieRepository.saveAll(...)`
-- Log progress and completion stats
+Its responsibility is to:
+- Scan Redis for `movie:*` keys
+- Load movies in batches
+- Persist only movies missing `plotEmbedding` so embeddings are generated
+
+Also note `MovieRepository` (`src/main/java/io/redis/movies/searcher/core/repository/MovieRepository.java`), which provides the persistence operations used by this flow.
+
+Now replace this:
+```java
+public void regenerateMissingEmbeddings() {
+    // Implement this method to generate embeddings during startup
+}
+```
+
+With this:
+```java
+public void regenerateMissingEmbeddings() {
+    log.info("Scanning for movies with missing embeddings...");
+    Instant startTime = Instant.now();
+
+    // Phase 1: Scan for all movie keys using SCAN command
+    List<Integer> movieIds = new ArrayList<>(10000);
+    ScanOptions scanOptions = ScanOptions.scanOptions()
+            .match(KEY_PREFIX + "*")
+            .count(1000)
+            .build();
+
+    try (Cursor<String> cursor = redisTemplate.scan(scanOptions)) {
+        while (cursor.hasNext()) {
+            String key = cursor.next();
+            String idStr = key.substring(KEY_PREFIX.length());
+            try {
+                movieIds.add(Integer.parseInt(idStr));
+            } catch (NumberFormatException e) {
+                log.warn("Skipping invalid key: {}", key);
+            }
+        }
+    }
+
+    log.info("Found {} movie keys in Redis", movieIds.size());
+
+    // Phase 2: Load, filter, and save in bounded concurrent batches
+    final int batchSize = 200;
+    final int estimatedTotal = movieIds.size();
+    final int maxWorkers = 2;
+
+    AtomicInteger processedCounter = new AtomicInteger(0);
+
+    try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+        List<CompletableFuture<Void>> inFlight = new ArrayList<>(maxWorkers);
+
+        for (int i = 0; i < movieIds.size(); i += batchSize) {
+            List<Integer> batchIds = movieIds.subList(i, Math.min(i + batchSize, movieIds.size()));
+
+            List<Movie> moviesNeedingEmbeddings = new ArrayList<>();
+            movieRepository.findAllById(batchIds).forEach(movie -> {
+                if (movie.getPlot() != null && !movie.getPlot().isBlank()
+                        && movie.getPlotEmbedding() == null) {
+                    moviesNeedingEmbeddings.add(movie);
+                }
+            });
+
+            if (moviesNeedingEmbeddings.isEmpty()) {
+                continue;
+            }
+
+            List<Movie> batch = new ArrayList<>(moviesNeedingEmbeddings);
+
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                try {
+                    movieRepository.saveAll(batch);
+
+                    int total = processedCounter.addAndGet(batch.size());
+                    int previousMilestone = (total - batch.size()) / 1000;
+                    int currentMilestone = total / 1000;
+                    if (currentMilestone > previousMilestone) {
+                        double percentComplete = (total * 100.0) / estimatedTotal;
+                        log.info("Regenerated embeddings: ~{}% ({} movies processed)",
+                                String.format("%.1f", percentComplete), total);
+                    }
+                } catch (Exception ex) {
+                    log.error("Error saving batch: {}", ex.getMessage(), ex);
+                }
+            }, executor);
+
+            inFlight.add(future);
+
+            // Bound concurrency: wait every maxWorkers tasks
+            if (inFlight.size() >= maxWorkers) {
+                CompletableFuture.allOf(inFlight.toArray(new CompletableFuture[0])).join();
+                inFlight.clear();
+            }
+        }
+
+        if (!inFlight.isEmpty()) {
+            CompletableFuture.allOf(inFlight.toArray(new CompletableFuture[0])).join();
+        }
+    }
+
+    int totalProcessed = processedCounter.get();
+    if (totalProcessed == 0) {
+        log.info("No movies with missing embeddings found.");
+        return;
+    }
+
+    Duration duration = Duration.between(startTime, Instant.now());
+    double seconds = duration.toMillis() / 1000.0;
+    log.info("Embedding regeneration complete: {} movies processed in {} seconds",
+            totalProcessed, String.format("%.2f", seconds));
+}
+```
 
 ### Step 3: Rebuild and run
 If you are using **Local development**, run:
@@ -80,7 +199,10 @@ If you are using **Local development**, run:
 
 If you are using **GitHub Codespaces** or **Dev Containers**, run the same command from the workspace terminal.
 
-Watch startup logs for embedding regeneration progress.
+Important behavior:
+- On first run after Lab 2, startup can take longer because the app scans Redis and generates missing embeddings.
+- On later runs, if embeddings are already present, startup is much faster.
+- This backfill is required for vector search to return meaningful results.
 
 ## 🧪 Testing Your Implementation
 ### Check backfill progress in logs
@@ -88,24 +210,25 @@ Expect logs similar to:
 - `Scanning for movies with missing embeddings...`
 - `Found X movie keys in Redis`
 - `Regenerated embeddings: ...`
+- `No movies with missing embeddings found.`
 
-### Verify vector field exists
-```bash
-redis-cli JSON.GET movie:1 $.plotEmbedding
-```
-You should see a float array once embedding is created.
+### Verify embeddings in Redis Insight
+1. Open Redis Insight (`http://localhost:5540` or forwarded URL)
+2. Connect to `redis-database:6379` (Codespaces/Dev Containers) or your local Redis endpoint
+3. Browse `movie:*` documents
+4. Open a movie and verify `plotEmbedding` now exists
 
 ### Semantic query check
 ```bash
 curl "http://localhost:8081/search?query=dude%20who%20teaches%20rock"
 ```
-Results should improve once embeddings exist.
+With embeddings generated, vector search can contribute results for semantic queries.
 
 ## 🎨 Understanding the Code
 ### 1. `MovieService`
-- Handles backfill for already imported records
-- Uses batched processing for scalability
-- Persists updates to trigger embedding generation
+- Handles embedding backfill for already imported records
+- Uses `MovieRepository` to load and save in batches
+- Persists only movies missing `plotEmbedding`
 
 ### 2. `CommandLineRunner` in `RedisMoviesSearcher`
 - Ensures regeneration runs automatically on startup
@@ -114,6 +237,7 @@ Results should improve once embeddings exist.
 ### 3. Why this matters
 - Lab 2 imported data quickly
 - This lab makes that same data vector-searchable without reimport
+- Without this step, vector search has no embeddings to compare against
 
 ## 🔍 What's Still Missing?
 At this stage, the app supports manual hybrid behavior with embeddings, but:
