@@ -68,7 +68,7 @@ Key files:
 - `src/main/java/io/redis/movies/searcher/RedisMoviesSearcher.java`
 
 ### Step 3: Start infrastructure services
-If you are running from **Local development**, run:
+If you are running from **Local development**, run these commands separately:
 
 ```bash
 docker compose up -d
@@ -79,8 +79,13 @@ If you are using **GitHub Codespaces** or **Dev Containers**, these services are
 ### Step 4: Build and start the backend
 
 ```bash
-./mvnw clean package
-./mvnw spring-boot:run
+mvn clean package
+```
+
+Then run:
+
+```bash
+mvn spring-boot:run
 ```
 
 > 💡 From this point on, every time you change backend code, rebuild and run the backend again before validating behavior.
@@ -133,7 +138,7 @@ At this stage, the app is operational, but:
 <details>
 <summary>Connection refused on port 8081</summary>
 
-Ensure `./mvnw spring-boot:run` is running and startup completed.
+Ensure `mvn spring-boot:run` is running and startup completed.
 </details>
 
 <details>
