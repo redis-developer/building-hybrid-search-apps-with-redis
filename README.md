@@ -86,14 +86,9 @@ What this command does:
 - `--proc plot/releaseDate/rating/actors`: extracts and maps nested `info.*` fields
 - `json.set --keyspace movie --key id`: stores each record as Redis JSON under `movie:<id>`
 
-During storage, each movie becomes a JSON document in Redis, ready for indexing/search using the structure expected by the app.
-
-URI notes:
-- Local development default: `redis://localhost:6379`
-- GitHub Codespaces / Dev Containers: set `REDIS_URI` to `redis://redis-database:6379`
+During storage, each movie becomes a record using the JSON data type in Redis, ready for indexing/search using the structure expected by the app.
 
 ### Step 3: Run the import
-If you are using **Local development**, run:
 
 ```bash
 cd data
@@ -101,8 +96,6 @@ chmod +x import-movies.sh
 ./import-movies.sh
 cd ..
 ```
-
-If you are using **GitHub Codespaces** or **Dev Containers**, run the same command from the workspace terminal.
 
 ## 🧪 Testing Your Import
 ### API verification (FTS on title)
@@ -126,16 +119,12 @@ You should get movie matches based on title terms from imported data.
 
 ### 2. `create-index.sh`
 - Defines schema used by the search layer
-- Includes vector field configuration for upcoming labs
-
-### 3. Search path at this stage
-- API still uses the manual path
-- Most useful behavior now is lexical FTS because embeddings are not backfilled yet
+- This script is for development purposes
 
 ## 🔍 What's Still Missing?
 At this stage, the app has data, but:
-- ❌ Existing records still need embedding backfill
-- ❌ Native hybrid path is not active
+- ❌ Existing records still need embedding field
+- ❌ Native hybrid path is not currently implemented
 - ❌ Prompt embedding cache-aside is not active
 
 ## 🐛 Troubleshooting
