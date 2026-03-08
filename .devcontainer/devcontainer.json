@@ -1,0 +1,58 @@
+{
+  "name": "building-hybrid-search-apps-with-redis",
+  "dockerComposeFile": [
+    "docker-compose.yml"
+  ],
+  "service": "workspace",
+  "workspaceFolder": "/workspaces/building-hybrid-search-apps-with-redis",
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": true,
+  "runServices": [
+    "workspace",
+    "redis-database",
+    "redis-insight"
+  ],
+  "shutdownAction": "stopCompose",
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  },
+  "forwardPorts": [
+    8080,
+    8081,
+    5540,
+    6379
+  ],
+  "portsAttributes": {
+    "8080": {
+      "label": "Frontend"
+    },
+    "8081": {
+      "label": "Backend API"
+    },
+    "5540": {
+      "label": "Redis Insight"
+    },
+    "6379": {
+      "label": "Redis"
+    }
+  },
+  "remoteEnv": {
+    "REDIS_HOST": "redis-database",
+    "REDIS_PORT": "6379"
+  },
+  "postCreateCommand": "bash .devcontainer/scripts/ensure-cache-permissions.sh vscode && if [ -x ./mvnw ]; then ./mvnw -q -DskipTests dependency:go-offline; fi && riot --version",
+  "postStartCommand": "bash .devcontainer/scripts/ensure-cache-permissions.sh vscode",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "vmware.vscode-spring-boot",
+        "redhat.vscode-xml",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}
