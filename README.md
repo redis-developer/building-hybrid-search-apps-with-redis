@@ -63,7 +63,10 @@ Open `data/import-movies.sh`.
 
 In this branch, the script still contains a TODO placeholder. Replace it with:
 ```bash
-REDIS_URI="redis://redis-database:6379"
+# Default assumes local Redis.
+# For GitHub Codespaces / Dev Containers, set:
+#   export REDIS_URI="redis://redis-database:6379"
+REDIS_URI="${REDIS_URI:-redis://localhost:6379}"
 
 riot file-import \
     --uri "$REDIS_URI" \
@@ -86,8 +89,8 @@ What this command does:
 During storage, each movie becomes a JSON document in Redis, ready for indexing/search using the structure expected by the app.
 
 URI notes:
-- GitHub Codespaces / Dev Containers: use `redis://redis-database:6379`
-- Local development: use `redis://localhost:6379` if Redis is exposed on your host
+- Local development default: `redis://localhost:6379`
+- GitHub Codespaces / Dev Containers: set `REDIS_URI` to `redis://redis-database:6379`
 
 ### Step 3: Run the import
 If you are using **Local development**, run:
