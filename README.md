@@ -108,7 +108,7 @@ If you're using **Local development**:
   
 ### Step 3: Proceed to Lab 1
 
-You can now start the [Lab 1: Get the Search Up and Running](../../tree/lab-1-starter/README.md)
+You can now start the [Lab 1: Get the Search Up and Running](../../blob/lab-1-starter/README.md)
 
 ```bash
 git checkout lab-1-starter
