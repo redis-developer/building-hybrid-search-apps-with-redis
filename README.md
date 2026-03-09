@@ -4,7 +4,7 @@
 By the end of this lab, you will:
 - Run the full workshop stack in your selected environment (Codespaces, Dev Containers, or Local development)
 - Understand the baseline search architecture used across the workshop
-- Observe the RediSearch index creation on the first app run
+- Observe the Redis Search index creation on the first app run
 - Validate the API and UI are operational before loading data
 - Understand the initial search path (`manualHybridSearch`) and core domain model
 
