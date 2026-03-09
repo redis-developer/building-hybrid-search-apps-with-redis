@@ -280,7 +280,7 @@ Congratulations. You now have:
 - ✅ Strong semantic retrieval foundation
 
 ## ➡️ Next Steps
-Proceed to [Lab 4: Implementing Native Hybrid Search](../../tree/lab-4-starter/README.md)
+Proceed to [Lab 4: Implementing Native Hybrid Search](../../blob/lab-4-starter/README.md)
 
 ```bash
 git checkout lab-4-starter
