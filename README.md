@@ -19,7 +19,7 @@ This includes:
 - **Redis 8 + Query Engine**: storage and indexing layer
 - **Initial Search Strategy**: manual hybrid method already implemented in code
 
-### Architecture Overview
+### Application Screenshot
 ![search.png](images/search.png)
 
 ## 📋 Prerequisites Check
