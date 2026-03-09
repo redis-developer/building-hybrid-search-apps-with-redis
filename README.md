@@ -228,6 +228,12 @@ curl "http://localhost:8081/search?query=dude%20who%20teaches%20rock"
 ```
 With embeddings generated, vector search can contribute results for semantic queries.
 
+### UI validation
+1. Open `http://localhost:8080/redis-movies-searcher`
+2. Search for `star`
+3. Search for `dude who teaches rock`
+4. Confirm no browser errors and consistent results
+
 ## 🎨 Understanding the Code
 ### 1. `MovieService`
 - Handles embedding backfill for already imported records
