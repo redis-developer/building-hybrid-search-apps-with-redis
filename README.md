@@ -191,7 +191,7 @@ What this code does:
 - Logs progress and total execution time, and exits quickly when no backfill is needed.
 
 ### Step 3: Rebuild and run
-If you are using **Local development**, run these commands separately:
+Run these commands separately from the workspace terminal:
 
 ```bash
 mvn clean package
@@ -202,8 +202,6 @@ Then run:
 ```bash
 mvn spring-boot:run
 ```
-
-If you are using **GitHub Codespaces** or **Dev Containers**, run the same command from the workspace terminal.
 
 Important behavior:
 - Startup can take longer on the first run because the app needs to create embeddings.
