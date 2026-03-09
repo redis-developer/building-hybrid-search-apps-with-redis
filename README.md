@@ -221,6 +221,7 @@ Expect logs similar to:
 2. Connect to `redis-database:6379` (Codespaces/Dev Containers) or your local Redis endpoint
 3. Browse `movie:*` documents
 4. Open a movie and verify that the `plotEmbedding` field now exists
+   ![plot_embedding.png](images/plot_embedding.png)
 
 ### Semantic query check
 ```bash
