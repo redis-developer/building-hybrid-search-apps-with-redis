@@ -168,7 +168,7 @@ Congratulations. You now have:
 - ✅ A baseline app ready for data ingestion
 
 ## ➡️ Next Steps
-Proceed to [Lab 2: Importing Data into Redis](../../tree/lab-2-starter/README.md)
+Proceed to [Lab 2: Importing Data into Redis](../../blob/lab-2-starter/README.md)
 
 ```bash
 git checkout lab-2-starter
