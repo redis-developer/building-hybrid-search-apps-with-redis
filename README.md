@@ -208,13 +208,9 @@ Congratulations. You now have:
 - ✅ Reusable keyword embedding store in Redis
 - ✅ The complete workshop implementation
 
-## 🏁 Next Steps
-You can switch to the full reference branch:
+## ➡️ Next Steps
+Proceed to: [Workshop Summary](../../blob/workshop-complete/README.md)
+
 ```bash
 git checkout workshop-complete
-```
-
-Or return to the workshop index:
-```bash
-git checkout main
 ```
