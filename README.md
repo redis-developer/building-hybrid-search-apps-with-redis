@@ -158,7 +158,7 @@ Congratulations. You now have:
 - ✅ Search endpoint returning results from real data
 
 ## ➡️ Next Steps
-Proceed to [Lab 3: Implementing Embedding Creation](../../tree/lab-3-starter/README.md)
+Proceed to [Lab 3: Implementing Embedding Creation](../../blob/lab-3-starter/README.md)
 
 ```bash
 git checkout lab-3-starter
