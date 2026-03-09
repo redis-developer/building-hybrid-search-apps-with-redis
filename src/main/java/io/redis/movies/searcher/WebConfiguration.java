@@ -15,7 +15,11 @@ public class WebConfiguration {
             @Override
             public void addCorsMappings(@NonNull CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOriginPatterns("http://localhost:8080", "https://*.app.github.dev")
+                        .allowedOriginPatterns(
+                                "http://localhost:[*]",
+                                "http://127.0.0.1:[*]",
+                                "https://*.app.github.dev"
+                        )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
