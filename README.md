@@ -216,6 +216,17 @@ Ensure vector conversion matches API expectations (`float[]` vs bytes where requ
 </details>
 
 <details>
+<summary>`Unresolved compilation problems` at runtime</summary>
+
+This usually means stale local classes. Rebuild and restart:
+
+```bash
+mvn clean compile
+mvn spring-boot:run
+```
+</details>
+
+<details>
 <summary>Result type still behaves like manual path</summary>
 
 Confirm `SearchController` is calling `nativeHybridSearch(...)`.
