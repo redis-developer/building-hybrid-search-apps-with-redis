@@ -19,11 +19,11 @@ Hybrid search lets you combine lexical precision and semantic relevance in one r
 
 ### 🎯 What You'll Build
 By the end of this workshop, you'll build a complete Redis-powered search app with:
+- Support for typed queries with Redis OM for Spring
 - Redis JSON document data loading, modeling, and indexing
 - Native Redis hybrid search implemented with Spring Boot
 - Startup embedding regeneration for existing records
 - Prompt-embedding cache-aside via `Keyword` documents
-- Browser UI to validate behavior and latency
 
 ## 📋 Prerequisites
 
