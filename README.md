@@ -112,7 +112,9 @@ Use Redis Insight to inspect what happened at Redis level:
 1. Open Redis Insight (`http://localhost:5540` or forwarded URL)
 2. Connect to Redis (`redis-database:6379` in Codespaces/Dev Containers, or `localhost:6379` locally)
 3. Search for keys with pattern `movie:*` and confirm there are no records yet
+   ![search-for-keys.png](images/search-for-keys.png)
 4. Open the indexes view (or run commands panel) and confirm `movie_index` exists
+   ![index_exists.png](images/index_exists.png)
 
 ## 🎨 Understanding the Code
 ### 1. `SearchController`
