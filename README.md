@@ -82,7 +82,8 @@ Pick one of the setup options from the Prerequisites section:
 ### Step 2: Start your workspace
 If you're using **GitHub Codespaces**:
 - Create a new Codespace for this repository
-- Forward ports `8080`, `8081`, `5540`, and `6379`
+  ![new-codespace.png](images/new-codespace.png)
+  ![codespace-options.png](images/codespace-options.png)
 
 If you are using **Dev Containers locally**:
 - Clone the repository:
