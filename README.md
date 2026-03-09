@@ -117,7 +117,7 @@ Then follow the README instructions
 ## 📚 Resources
 - [Redis Search](https://redis.io/docs/latest/develop/interact/search-and-query/)
 - [Redis OM Spring](https://github.com/redis/redis-om-spring)
-- [RIOT Documentation](https://redis.io/docs/latest/develop/tools/riot/)
+- [RIOT Documentation](https://redis.github.io/riot/)
 - [Redis Insight](https://redis.io/insight/)
 
 ## 🤝 Contributing
