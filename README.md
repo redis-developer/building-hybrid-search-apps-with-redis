@@ -61,13 +61,13 @@ No paid account is required for the core workshop flow. Everything can run local
 ## 🗺️ Workshop Structure
 This workshop has an estimated duration of 1.5 hours and is organized into 5 progressive labs, each building on the previous one. Each lab introduces a specific technical challenge, which is then addressed in the subsequent lab.
 
-| Lab | Topic | Duration | Branch |
-|:----|:------|:---------|:-------|
-| 1 | [Get the search up and running](../../tree/lab-1-starter/README.md) | 20 mins  | `lab-1-starter` |
-| 2 | [Importing data into Redis](../../tree/lab-2-starter/README.md) | 10 mins  | `lab-2-starter` |
-| 3 | [Implementing embedding creation](../../tree/lab-3-starter/README.md) | 25 mins  | `lab-3-starter` |
-| 4 | [Implementing native hybrid search](../../tree/lab-4-starter/README.md) | 25 mins  | `lab-4-starter` |
-| 5 | [Caching prompt embedding](../../tree/lab-5-starter/README.md) | 10 mins  | `lab-5-starter` |
+| Lab | Topic                                                                   | Duration | Branch |
+|:----|:------------------------------------------------------------------------|:---------|:-------|
+| 1 | [Get the Search Up and Running](../../tree/lab-1-starter/README.md)     | 20 mins  | `lab-1-starter` |
+| 2 | [Importing Data into Redis](../../tree/lab-2-starter/README.md)         | 10 mins  | `lab-2-starter` |
+| 3 | [Implementing Embedding Creation](../../tree/lab-3-starter/README.md)   | 25 mins  | `lab-3-starter` |
+| 4 | [Implementing Native Hybrid Search](../../tree/lab-4-starter/README.md) | 25 mins  | `lab-4-starter` |
+| 5 | [Caching Prompt Embedding](../../tree/lab-5-starter/README.md)          | 10 mins  | `lab-5-starter` |
 
 Each lab also contains a corresponding `lab-X-solution` branch with the completed code for reference. You can use this branch to compare your current implementation using `git diff {lab-X-solution}`. Alternatively, you can switch to the solution branch at any time during the lab if you are falling behind or to get unstuck.
 
@@ -107,7 +107,7 @@ If you're using **Local development**:
   
 ### Step 3: Proceed to Lab 1
 
-You can now start the [Lab 1: Get the search up and running](../../tree/lab-1-starter/README.md)
+You can now start the [Lab 1: Get the Search Up and Running](../../tree/lab-1-starter/README.md)
 
 ```bash
 git checkout lab-1-starter
