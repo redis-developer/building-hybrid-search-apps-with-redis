@@ -105,7 +105,10 @@ If you're using **Local development**:
   riot --version
   ```
   
-### Step 3: Begin your First Lab
+### Step 3: Proceed to Lab 1
+
+You can now start the [Lab 1: Get the search up and running](../../tree/lab-1-starter/README.md)
+
 ```bash
 git checkout lab-1-starter
 ```
