@@ -237,7 +237,7 @@ Congratulations. You now have:
 - ✅ Cleaner server-side search composition
 
 ## ➡️ Next Steps
-Proceed to [Lab 5: Caching Prompt Embedding](../../tree/lab-5-starter/README.md)
+Proceed to [Lab 5: Caching Prompt Embedding](../../blob/lab-5-starter/README.md)
 
 ```bash
 git checkout lab-5-starter
