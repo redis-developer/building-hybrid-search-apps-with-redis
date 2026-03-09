@@ -188,6 +188,17 @@ Verify keyword vectors and movie vectors use the same dimension/model setup.
 </details>
 
 <details>
+<summary>`Unresolved compilation problems` at runtime</summary>
+
+This usually means stale local classes. Rebuild and restart:
+
+```bash
+mvn clean compile
+mvn spring-boot:run
+```
+</details>
+
+<details>
 <summary>Repository wiring errors</summary>
 
 Ensure `KeywordRepository` is under scanned packages and `@EnableRedisDocumentRepositories` is active.
