@@ -209,7 +209,7 @@ Congratulations. You now have:
 - ✅ The complete workshop implementation
 
 ## ➡️ Next Steps
-Proceed to: [Workshop Summary](../../blob/workshop-complete/README.md)
+Proceed to: [Workshop Complete](../../blob/workshop-complete/README.md)
 
 ```bash
 git checkout workshop-complete
