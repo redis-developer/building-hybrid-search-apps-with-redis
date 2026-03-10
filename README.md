@@ -140,8 +140,11 @@ Both responses should include:
 1. Open Redis Insight (`http://localhost:5540` or forwarded URL)
 2. Connect to `redis-database:6379` (Codespaces/Dev Containers) or your local Redis endpoint
 3. Browse `keyword:*` keys and open one document
+   ![browse-keys.png](images/browse-keys.png)
 4. Confirm the document contains `value` and `embedding`
+   ![confirm-record.png](images/confirm-record.png)
 5. Confirm `keyword_index` exists
+   ![index-exists.png](images/index-exists.png)
 
 ### 4. Validate cache growth with a new prompt
 Run a different query:
