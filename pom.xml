@@ -21,7 +21,7 @@
     <properties>
         <java.version>21</java.version>
         <redis.om.spring.version>2.0.4</redis.om.spring.version>
-        <jedis-version>7.3.0</jedis-version>
+        <jedis-version>7.4.1</jedis-version>
         <spring.boot.version>4.0.0</spring.boot.version>
         <maven.compiler.release>21</maven.compiler.release>
         <maven.deploy.skip>true</maven.deploy.skip>
